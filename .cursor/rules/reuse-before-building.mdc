@@ -1,0 +1,44 @@
+---
+description: Reuse existing code and established libraries, check documentation first, and ask before writing any new implementation
+alwaysApply: true
+---
+
+# Reuse First, Ask Before Building
+
+Before writing any new function, component, hook, utility, module, or feature, do these steps in order.
+
+## 1. Search the codebase
+- Search the project for code that already does this or something close. Search by behavior, not just by name.
+- If something close exists, extend or reuse it. Do not create a parallel version.
+
+## 2. Check what's already installed
+- Read the project's dependency manifests (`package.json`, `requirements.txt`, `pyproject.toml`, `Cargo.toml`, `go.mod`, etc.) and check whether an installed library already provides this.
+- Check the language's standard library and the platform's built-in APIs (browser, Node, framework features) too.
+
+## 3. Look for an established external library
+- If nothing installed fits, search for a well-maintained library that solves the problem (WebSearch, package registries like npm or PyPI).
+- Judge candidates on maintenance activity, adoption, license, bundle or binary size, security history, and compatibility with the existing stack.
+
+## 4. Read the documentation
+- Read the official docs for whatever you plan to use, for the version installed or proposed, using WebFetch or WebSearch.
+- Do not rely on memory for library APIs. Check the docs before using or replacing them.
+- Link the doc pages you used in your response.
+
+## 5. Ask before writing a new implementation or adding a dependency
+Before writing a custom implementation OR installing a new package, STOP and ask the user with the AskQuestion tool. Explain:
+- What you searched (project code, installed libraries, external packages, doc pages) and what you found
+- Your recommendation, in a sentence or two
+- The alternatives and their tradeoffs, e.g. a new package versus a hand-written version versus extending existing code
+
+Do not write the new code or install the package until the user approves.
+
+## No approval needed for
+- Glue code that only wires existing pieces together (passing props, config, calling existing functions)
+- Using a library that's already installed, following its documentation
+- Changes to existing code that the user explicitly asked for
+- Code the user explicitly asked you to write from scratch
+
+## Example
+User: "Format these timestamps as '3 minutes ago'."
+- ❌ Write a custom `timeAgo()` helper with hand-rolled minute/hour/day math.
+- ✅ Check the project for an existing helper, then installed packages, then built-ins (`Intl.RelativeTimeFormat`). If none fit, find candidates like `date-fns`, read their docs, and ask the user whether to add one or write it by hand.

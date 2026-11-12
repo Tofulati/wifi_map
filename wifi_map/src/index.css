@@ -1,0 +1,79 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+}
+
+.network-summary {
+  min-width: 220px;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.network-summary ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.network-summary-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  column-gap: 4px;
+}
+
+.network-summary-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.network-summary-heading {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.network-summary-verdict {
+  color: #666;
+}
+
+.network-summary-track {
+  height: 8px;
+  overflow: hidden;
+  background: #eee;
+  border-radius: 4px;
+}
+
+.network-summary-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+}
+
+/* Same red / yellow / green as the map's speed colors. */
+.network-summary-poor {
+  background: rgb(215, 48, 39);
+}
+
+.network-summary-ok {
+  background: rgb(254, 224, 139);
+}
+
+.network-summary-great {
+  background: rgb(26, 152, 80);
+}
+
+.network-summary-note {
+  margin-top: 6px;
+  color: #666;
+}

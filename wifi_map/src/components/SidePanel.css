@@ -1,0 +1,61 @@
+/* 15% of the screen, but never so narrow that the speed bars stop fitting or a phone screen
+   gets a sliver. */
+.side-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  width: 15%;
+  min-width: min(320px, 100%);
+  background: white;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.25s ease;
+}
+
+.side-panel[data-open='false'] {
+  transform: translateX(-100%);
+}
+
+.side-panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 12px 16px 24px;
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+/* Hangs off the panel's right edge, so it stays on screen when the panel slides away. */
+.side-panel-toggle {
+  position: absolute;
+  top: 12px;
+  left: 100%;
+  width: 24px;
+  height: 48px;
+  padding: 0;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  background: white;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.2);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.side-panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.side-panel-section + .side-panel-section {
+  padding-top: 16px;
+  border-top: 1px solid #e5e5e5;
+}
+
+.side-panel-heading {
+  margin: 0;
+  font-size: 16px;
+}

@@ -1,0 +1,76 @@
+---
+description: React + TypeScript code style — named function declarations, no magic numbers, no inline styles, idiomatic React
+alwaysApply: true
+---
+
+# Code Style
+
+## 1. Named functions (declaration style)
+
+- Components, helpers, and handlers use `function` declarations, not arrow functions assigned to `const`.
+- JSX event props reference a named handler; don't write an inline arrow.
+- Hook callbacks (`useEffect`, `useMemo`, `useCallback`) are named function expressions so stack traces and React DevTools show a name.
+- Allowed exceptions: single-expression callbacks to array methods (`.map`, `.filter`, `.sort`) and state updaters (`setItems((previous) => [...previous, item])`).
+
+```tsx
+// ❌ BAD
+const handleMeasure = async () => { ... }
+const pointsLayerId = (name: string) => `speed-points:${name}`
+useEffect(() => { saveReadings(readings) }, [readings])
+<select onChange={(event) => setSelectedNetwork(event.target.value)} />
+
+// ✅ GOOD
+async function handleMeasure() { ... }
+function pointsLayerId(name: string) { return `speed-points:${name}` }
+useEffect(function persistReadings() { saveReadings(readings) }, [readings])
+function handleNetworkChange(event: ChangeEvent<HTMLSelectElement>) { setSelectedNetwork(event.target.value) }
+<select onChange={handleNetworkChange} />
+```
+
+## 2. No magic numbers or strings
+
+- Any literal with meaning beyond itself becomes an `UPPER_SNAKE_CASE` constant at the top of the module that owns the concept. Export it from that module when other files need it (like `LOCATION_OPTIONS` in `networkReading.ts`). Don't create a catch-all `constants.ts`.
+- Put units in the name: `_PX`, `_MS`, `_MBPS`, `_METERS`, `_DECIMALS`.
+- A string repeated in more than one place (DOM ids, storage keys, layer ids) is a constant.
+- Allowed bare literals: `0`, `1`, `-1` as an identity, index, or increment, and `''` as an empty value.
+
+```tsx
+// ❌ BAD
+reading.latitude.toFixed(5)
+<Popup offset={10} />
+<input list="known-networks" />  ...  <datalist id="known-networks">
+
+// ✅ GOOD
+const COORDINATE_DECIMALS = 5
+const POPUP_OFFSET_PX = 10
+const KNOWN_NETWORKS_LIST_ID = 'known-networks'
+```
+
+## 3. Styling lives in separate files
+
+- Never write `style={{ ... }}` in JSX. Use `className`.
+- Component styles go in a CSS file next to the component (`MeasurePanel.css`, imported by `MeasurePanel.tsx`). Only app-wide styles go in `index.css`.
+- Class names are kebab-case and prefixed with the component name: `measure-panel`, `measure-panel-error`.
+- Express conditional styling with modifier classes or `data-*` attributes. Don't compute style objects.
+- When a library only accepts style objects (react-map-gl `<Map style>`, MapLibre layer `paint`/`layout`), define them as named constants in `<Component>.styles.ts` next to the component and import them.
+
+```tsx
+// ❌ BAD — in WifiMap.tsx
+<Map style={{ width: '100%', height: '100%' }} />
+const speedPointsPaint = { 'circle-radius': 5, 'circle-color': ... }
+
+// ✅ GOOD — WifiMap.styles.ts exports MAP_CONTAINER_STYLE, speedPointsPaint
+<Map style={MAP_CONTAINER_STYLE} />
+```
+
+## 4. React conventions
+
+- One exported component per file. The file name matches the component in PascalCase. Props are a `type <Component>Props`, destructured in the signature.
+- Custom hooks are named `useX` and follow the Rules of Hooks: call them at the top level only, never in conditions or loops.
+- Derive values during render. Don't mirror props or other state into `useState` + `useEffect`. Use effects only to sync with external systems (storage, map instance, network).
+- Model multi-step state as a discriminated union (`{ status: 'idle' } | { status: 'done'; ... }`), not as several booleans.
+- Update state immutably. Use the functional updater when the next state depends on the previous one.
+- List `key`s are stable ids, never array indexes.
+- Business logic and I/O live in `src/lib/`. Components render and wire things together.
+- No nested ternaries in JSX. Extract a named variable or a small component instead.
+- No `any`, no unused code, no commented-out code, no stray `console.log`.

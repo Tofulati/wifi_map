@@ -1,0 +1,36 @@
+.selected-network-location {
+  margin-top: 2px;
+  color: #444;
+  font-size: 13px;
+}
+
+.selected-network-average {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.selected-network-detail {
+  margin: 0;
+  color: #666;
+  font-size: 12px;
+}
+
+.selected-network-readings > summary {
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.selected-network-reading-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.selected-network-reading-list > li + li {
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+}

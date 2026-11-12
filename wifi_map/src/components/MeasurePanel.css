@@ -1,0 +1,27 @@
+.measure-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.measure-panel-detail {
+  color: #666;
+  font-size: 12px;
+}
+
+.measure-panel-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #444;
+  font-size: 12px;
+}
+
+.measure-panel-field input {
+  font-size: 14px;
+}
+
+.measure-panel-error {
+  color: rgb(215, 48, 39);
+}

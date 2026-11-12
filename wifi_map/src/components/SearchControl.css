@@ -1,0 +1,13 @@
+/* The geocoder's own styles size it as a floating map control (a third of the map, capped at
+   360px); inside the side panel it should fill the panel's width instead. */
+.search-control .maplibregl-ctrl-geocoder {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  font-size: 15px;
+  line-height: 20px;
+}
+
+.search-control .maplibregl-ctrl-geocoder .suggestions {
+  font-size: 13px;
+}

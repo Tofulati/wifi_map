@@ -1,0 +1,15 @@
+.network-speed-card {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.network-speed-card-name {
+  font-weight: 600;
+}
+
+.network-speed-card-detail {
+  color: #666;
+  font-size: 12px;
+}
