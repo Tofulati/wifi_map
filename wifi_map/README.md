@@ -2,7 +2,8 @@
 
 A map of measured Wi-Fi speeds. Stand somewhere, type the network's name, press **Measure this network**, and the app runs a speed test, tags the result with your GPS position, and plots it. Readings build up into colored speed zones per network, so you can see where a cafe's Wi-Fi is fast, where it drops off, and which network nearby is best for streaming, gaming, or video calls.
 
-Everything runs in the browser. There is no backend: readings are stored in your browser's `localStorage`.
+Everything runs in the browser. Readings are saved to `localStorage` immediately and synchronized
+to Supabase when configured. The local copy remains available offline or when Supabase is unavailable.
 
 ## Quick start
 
@@ -12,6 +13,11 @@ Requires Node.js 20.19+ or 22.12+ (Vite 8's minimum).
 npm install
 npm run dev        # http://localhost:5173
 ```
+
+To enable remote persistence, copy `.env.example` to `.env.local` and set
+`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. Never use a Supabase service-role key in
+the browser. Apply the migration in `supabase/migrations/` through the Supabase SQL editor or the
+Supabase CLI.
 
 Measuring needs location permission. Browsers only grant it on `localhost` or over HTTPS, so to test on a phone, expose the dev server through an HTTPS tunnel such as `cloudflared` or `ngrok`.
 
@@ -64,7 +70,9 @@ src/
 │   ├── coordinates.ts       Coordinates type, formatting, meters-per-degree math
 │   ├── networkReading.ts    Reading type; runs the speed test and GPS lookup
 │   ├── networkName.ts       Cleans and matches network names ("cafenet" → "CafeNet")
-│   ├── readingStore.ts      Load/save readings in localStorage
+│   ├── readingStore.ts      Load/save readings in localStorage and preserve sync metadata
+│   ├── supabaseClient.ts    Create the public Supabase client from Vite environment variables
+│   ├── measurementRepository.ts  Typed Supabase persistence and query operations
 │   ├── nearbyReadings.ts    Averages readings per network near a point
 │   ├── activitySupport.ts   Rates speeds for streaming, gaming, calls, etc.
 │   ├── speedContours.ts     Turns readings into colored speed zones
@@ -94,6 +102,24 @@ These are all public, keyless endpoints:
 | [CARTO Positron](https://github.com/CartoDB/basemap-styles) | Basemap tiles | `components/map/WifiMap/WifiMap.tsx` |
 
 Photon's demo server has no uptime guarantee and asks for reasonable traffic only. Self-host it if the app gets real users.
+
+## Supabase persistence
+
+The migration creates `networks`, `access_points`, and `measurements`. A network is scoped by
+`network_scope` (currently `anonymous`) and its normalized SSID, rather than treating an SSID as
+globally unique. Measurements use a client-generated UUID and the original `recorded_at` timestamp,
+so retries are idempotent and do not rewrite collection times. Browser-unavailable fields such as
+BSSID, channel, jitter, signal strength, and packet loss are stored as null.
+
+The app loads local readings first, then merges remote readings by measurement UUID. New readings
+are written locally before a background upload. Failed uploads remain local and are retried when
+the browser comes back online. Demo readings never enter either persistence path.
+
+The migration enables Row Level Security. Its initial anonymous policies are suitable only for a
+prototype: they allow public measurement submission and therefore require abuse controls before
+production use. For deployment with accounts, replace them with policies based on `auth.uid()` and
+add an ownership column (or a user-scoped `network_scope`), then add rate limiting and moderation
+at the edge.
 
 ## Further reading
 

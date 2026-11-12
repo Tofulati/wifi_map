@@ -3,6 +3,7 @@ import type { NetworkReading } from './networkReading'
 
 const STORAGE_KEY = 'wifi-map:readings'
 const LAST_NETWORK_KEY = 'wifi-map:last-network'
+const READING_ID_PREFIX = 'wifi-reading-'
 
 function isFiniteNumber(field: unknown): field is number {
   return typeof field === 'number' && Number.isFinite(field)
@@ -15,7 +16,9 @@ function toNetworkReading(value: unknown): NetworkReading | null {
   const { networkName, downloadMbps, uploadMbps, latencyMs, longitude, latitude } =
     value as Record<string, unknown>
   if (![downloadMbps, longitude, latitude].every(isFiniteNumber)) return null
+  const record = value as Record<string, unknown>
   return {
+    id: typeof record.id === 'string' ? record.id : createReadingId(),
     // Readings saved before names existed are kept, grouped together instead of guessed at.
     networkName: typeof networkName === 'string' ? networkName : UNNAMED_NETWORK,
     downloadMbps: downloadMbps as number,
@@ -24,6 +27,25 @@ function toNetworkReading(value: unknown): NetworkReading | null {
     latencyMs: isFiniteNumber(latencyMs) ? latencyMs : undefined,
     longitude: longitude as number,
     latitude: latitude as number,
+    // Older local entries had no collection timestamp; use the migration time so they can still
+    // be uploaded without inventing a misleading epoch date.
+    recordedAt: typeof record.recordedAt === 'string' ? record.recordedAt : new Date().toISOString(),
+    syncStatus:
+      record.syncStatus === 'synced' || record.syncStatus === 'failed' ? record.syncStatus : 'pending',
+  }
+}
+
+export function createReadingId(): string {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID()
+  return `${READING_ID_PREFIX}${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
+export function ensureReadingIdentity(reading: NetworkReading): NetworkReading {
+  return {
+    ...reading,
+    id: reading.id ?? createReadingId(),
+    recordedAt: reading.recordedAt ?? new Date().toISOString(),
+    syncStatus: reading.syncStatus ?? 'pending',
   }
 }
 
@@ -35,7 +57,7 @@ export function loadReadings(): NetworkReading[] {
       .map(toNetworkReading)
       .filter((reading): reading is NetworkReading => reading !== null)
     // Re-applying the naming rules on load means rule changes also fix up older data.
-    return canonicalizeNetworkNames(readings)
+    return canonicalizeNetworkNames(readings).map(ensureReadingIdentity)
   } catch {
     return []
   }

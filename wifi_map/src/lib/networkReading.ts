@@ -11,6 +11,9 @@ export type NetworkSpeeds = {
 export type NetworkReading = NetworkSpeeds &
   Coordinates & {
     networkName: string
+    id?: string
+    recordedAt?: string
+    syncStatus?: 'pending' | 'synced' | 'failed'
   }
 
 // The library's default sequence goes up to 250 MB downloads, which takes close to a minute.

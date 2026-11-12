@@ -12,6 +12,7 @@
   "dependencies": {
     "@cloudflare/speedtest": "^1.17.0",
     "@maplibre/maplibre-gl-geocoder": "^1.9.4",
+    "@supabase/supabase-js": "^2.119.0",
     "@turf/difference": "^7.4.0",
     "@turf/distance": "^7.4.0",
     "@turf/interpolate": "^7.4.0",

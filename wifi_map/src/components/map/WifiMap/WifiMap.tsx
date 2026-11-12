@@ -31,7 +31,16 @@ import {
   type NetworkReading,
   type NetworkSpeeds,
 } from '../../../lib/networkReading'
-import { loadReadings, saveReadings } from '../../../lib/readingStore'
+import {
+  ensureReadingIdentity,
+  loadReadings,
+  saveReadings,
+} from '../../../lib/readingStore'
+import {
+  listMeasurements,
+  synchronizeReadings,
+} from '../../../lib/measurementRepository'
+import { supabaseConfigurationMessage } from '../../../lib/supabaseClient'
 import { computeSpeedSurfaces, EMPTY_CONTOURS } from '../../../lib/speedContours'
 import { NetworkSpeedCard } from '../../network/NetworkSpeedCard/NetworkSpeedCard'
 import { PlaceDetails } from '../../panel/PlaceDetails/PlaceDetails'
@@ -158,6 +167,7 @@ export function WifiMap() {
   const [demoReadings, setDemoReadings] = useState<NetworkReading[] | null>(null)
   const [selection, setSelection] = useState<PanelSelection>(YOUR_LOCATION)
   const [userLocation, setUserLocation] = useState<UserLocation>({ status: 'locating' })
+  const [syncError, setSyncError] = useState<string | null>(supabaseConfigurationMessage)
   const mapRef = useRef<MapRef>(null)
   const geolocateControlRef = useRef<GeolocateControlInstance>(null)
 
@@ -167,6 +177,62 @@ export function WifiMap() {
     },
     [readings],
   )
+
+  useEffect(function loadRemoteReadings() {
+    if (supabaseConfigurationMessage()) return
+    void listMeasurements()
+      .then(function mergeRemoteReadings(remoteReadings) {
+        setReadings((localReadings) => {
+          const merged = new Map(remoteReadings.map((reading) => [reading.id, reading]))
+          localReadings.forEach((reading) => merged.set(reading.id, reading))
+          return [...merged.values()]
+        })
+        setSyncError(null)
+      })
+      .catch(function reportRemoteLoadError(error: unknown) {
+        setSyncError(error instanceof Error ? error.message : String(error))
+      })
+  }, [])
+
+  useEffect(
+    function synchronizePendingReadings() {
+      const pendingReadings = readings.filter(
+        (reading): reading is NetworkReading & { id: string; syncStatus: 'pending' } =>
+          reading.id !== undefined && reading.syncStatus === 'pending',
+      )
+      if (pendingReadings.length === 0 || supabaseConfigurationMessage()) return
+      void synchronizeReadings(pendingReadings).then(function updateSyncStatuses(result) {
+        setReadings((currentReadings) =>
+          currentReadings.map((reading) => {
+            if (!reading.id) return reading
+            if (result.syncedIds.includes(reading.id)) return { ...reading, syncStatus: 'synced' }
+            if (result.failedIds.includes(reading.id)) return { ...reading, syncStatus: 'failed' }
+            return reading
+          }),
+        )
+        if (result.failedIds.length > 0) {
+          setSyncError('Some measurements could not be synchronized and remain available locally.')
+        } else {
+          setSyncError(null)
+        }
+      })
+    },
+    [readings],
+  )
+
+  useEffect(function retryFailedReadingsWhenOnline() {
+    function retryFailedReadings() {
+      setReadings((currentReadings) =>
+        currentReadings.map((reading) =>
+          reading.syncStatus === 'failed' ? { ...reading, syncStatus: 'pending' } : reading,
+        ),
+      )
+    }
+    window.addEventListener('online', retryFailedReadings)
+    return function removeOnlineListener() {
+      window.removeEventListener('online', retryFailedReadings)
+    }
+  }, [])
 
   const allReadings = useMemo(
     function combineReadings() {
@@ -236,7 +302,7 @@ export function WifiMap() {
 
   // A reading carries a fresh GPS fix, which is newer than the last one the geolocate control got.
   function handleReading(reading: NetworkReading) {
-    setReadings((previous) => [...previous, reading])
+    setReadings((previous) => [...previous, ensureReadingIdentity(reading)])
     setUserLocation({
       status: 'found',
       coordinates: { longitude: reading.longitude, latitude: reading.latitude },
@@ -401,6 +467,8 @@ export function WifiMap() {
         />
 
         {selectionView}
+
+        {syncError && <p className="wifi-map-sync-error">{syncError}</p>}
 
         {/* Hidden rather than unmounted so a measurement in progress survives clicking a reading. */}
         <div hidden={activeSelection.kind !== 'yourLocation'}>

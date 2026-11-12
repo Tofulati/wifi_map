@@ -4,7 +4,7 @@ This document explains how Wi-Fi Map is put together: where state lives, how a m
 
 ## The big picture
 
-The app is a single page with no backend. Three layers sit on top of each other:
+The app is a single page with a local-first persistence layer. Three layers sit on top of each other:
 
 ```mermaid
 flowchart TD
@@ -37,6 +37,7 @@ flowchart TD
     MeasurePanel --> networkReading --> Cloudflare
     networkReading --> Geolocation
     WifiMap --> readingStore --> localStorage
+    WifiMap --> measurementRepository --> Supabase["Supabase PostgreSQL"]
     WifiMap --> speedContours
     WifiMap --> nearbyReadings
     SearchControl --> photonGeocoder --> Photon
@@ -51,7 +52,7 @@ All shared state lives in `WifiMap`, the top-level component. Children receive d
 
 | State | Type | Purpose |
 | --- | --- | --- |
-| `readings` | `NetworkReading[]` | Your real measurements. Loaded from and saved to `localStorage`. |
+| `readings` | `NetworkReading[]` | Your real measurements. Loaded locally, merged with Supabase history, and saved to `localStorage`. |
 | `demoReadings` | `NetworkReading[] \| null` | Fake readings for development. Kept separate so they are never saved. |
 | `selection` | `PanelSelection` | What the side panel shows: `yourLocation`, a clicked `network`, or a searched `place`. |
 | `userLocation` | `UserLocation` | `locating`, `found` (with coordinates), or `unavailable` (with a message). |
@@ -92,9 +93,15 @@ Nothing derived is copied into `useState`. Mirroring derived data into state is 
    - runs a trimmed Cloudflare speed test of at most about 30 s: latency, then download and upload ramping up to 25 MB and 10 MB.
 
    The two run one after the other, so a denied location permission doesn't leave a speed test downloading in the background.
-3. The resulting `NetworkReading` goes to `WifiMap` through `onReading`. `WifiMap` appends it to `readings` and treats its coordinates as your latest location.
+3. The resulting `NetworkReading` goes to `WifiMap` through `onReading`. `WifiMap` assigns a UUID and collection timestamp, appends it to `readings`, and treats its coordinates as your latest location.
 4. The `persistReadings` effect writes `readings` to `localStorage`.
-5. The derived data recomputes, and the map redraws the dot and the zones.
+5. A separate synchronization effect upserts pending readings through `measurementRepository`. The UUID makes retries idempotent; failures remain local and are retried after the browser reports that it is online.
+6. The derived data recomputes, and the map redraws the dot and the zones.
+
+On startup, local readings render immediately. `measurementRepository.listMeasurements()` then loads
+historical Supabase readings and merges them by UUID. Missing Supabase configuration is reported in
+the side panel and does not prevent local use. Demo readings remain a separate state value and are
+never uploaded.
 
 `readingStore.loadReadings()` checks every stored entry on load and drops any that are malformed. It also reapplies the name-cleaning rules, so data saved by older versions of the app still loads.
 
