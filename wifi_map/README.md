@@ -26,6 +26,15 @@ In development, **Show demo data** at the bottom of the side panel fills the map
 | `npm run preview` | Serves the built `dist/` locally |
 | `npm run lint` | ESLint over all TypeScript files |
 
+## CI and deployment
+
+Workflows live in [`../.github/workflows/`](../.github/workflows/):
+
+- **`lint.yml`** runs ESLint and `tsc -b` on every pull request.
+- **`deploy.yml`** runs on every push to `main`: it runs the lint workflow, then builds with the GitHub Pages base path and publishes to [tofulati.github.io/wifi_map](https://tofulati.github.io/wifi_map/). It can also be started by hand from the Actions tab.
+
+Pages must be set to deploy from **GitHub Actions** (Settings → Pages → Source).
+
 ## Project layout
 
 ```
