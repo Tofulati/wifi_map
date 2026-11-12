@@ -10,6 +10,12 @@
   font-size: var(--font-size-xs);
 }
 
+.measure-panel-warning {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+}
+
 .measure-panel-field {
   display: flex;
   flex-direction: column;

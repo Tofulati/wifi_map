@@ -48,7 +48,7 @@ export function MeasurePanel({ knownNetworkNames, onReading }: MeasurePanelProps
   return (
     <div className="measure-panel">
       <label className="measure-panel-field">
-        Network name
+        Network label
         <input
           list={KNOWN_NETWORKS_LIST_ID}
           value={networkInput}
@@ -60,6 +60,10 @@ export function MeasurePanel({ knownNetworkNames, onReading }: MeasurePanelProps
           spellCheck={false}
         />
       </label>
+      <div className="measure-panel-warning">
+        Browsers cannot read the Wi-Fi name. Use the exact SSID; this label is not verified and
+        controls how readings are grouped.
+      </div>
       <datalist id={KNOWN_NETWORKS_LIST_ID}>
         {knownNetworkNames.map((name) => (
           <option key={name} value={name} />
