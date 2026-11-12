@@ -11,6 +11,7 @@ export type NearbyNetwork = {
   networkName: string
   speeds: NetworkSpeeds
   readingCount: number
+  readings?: NetworkReading[]
 }
 
 function mean(values: number[]): number {
@@ -32,6 +33,7 @@ export function summarizeNetwork(networkName: string, readings: NetworkReading[]
   return {
     networkName,
     readingCount: readings.length,
+    readings,
     speeds: {
       downloadMbps: mean(readings.map((reading) => reading.downloadMbps)),
       uploadMbps: meanOfMeasured(readings.map((reading) => reading.uploadMbps)),
