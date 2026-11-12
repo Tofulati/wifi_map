@@ -41,6 +41,11 @@ Workflows live in [`../.github/workflows/`](../.github/workflows/):
 
 Pages must be set to deploy from **GitHub Actions** (Settings → Pages → Source).
 
+The deployment workflow reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` from
+repository or `github-pages` environment secrets. Add both values in GitHub under Settings →
+Secrets and variables → Actions before deploying. The publishable key is safe to expose in the
+browser; never add a Supabase service-role key.
+
 ## Project layout
 
 ```
