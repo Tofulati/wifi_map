@@ -1,18 +1,7 @@
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-}
-
-body {
-  font-family: system-ui, sans-serif;
-}
-
 .network-summary {
   min-width: 220px;
   margin-top: 6px;
-  font-size: 12px;
+  font-size: var(--font-size-xs);
 }
 
 .network-summary ul {
@@ -44,13 +33,13 @@ body {
 }
 
 .network-summary-verdict {
-  color: #666;
+  color: var(--color-text-muted);
 }
 
 .network-summary-track {
   height: 8px;
   overflow: hidden;
-  background: #eee;
+  background: var(--color-divider);
   border-radius: 4px;
 }
 
@@ -60,20 +49,19 @@ body {
   border-radius: 4px;
 }
 
-/* Same red / yellow / green as the map's speed colors. */
 .network-summary-poor {
-  background: rgb(215, 48, 39);
+  background: var(--color-speed-poor);
 }
 
 .network-summary-ok {
-  background: rgb(254, 224, 139);
+  background: var(--color-speed-ok);
 }
 
 .network-summary-great {
-  background: rgb(26, 152, 80);
+  background: var(--color-speed-great);
 }
 
 .network-summary-note {
   margin-top: 6px;
-  color: #666;
+  color: var(--color-text-muted);
 }

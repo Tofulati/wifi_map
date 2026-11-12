@@ -1,6 +1,6 @@
 /* Dev-only, so it sits out of the way at the bottom of the side panel. */
 .wifi-map-demo-toggle {
   margin-top: auto;
-  color: #666;
-  font-size: 12px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
 }

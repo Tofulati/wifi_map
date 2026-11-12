@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { Coordinates } from '../lib/networkReading'
+import type { Coordinates } from '../lib/coordinates'
 import { reverseGeocode } from '../lib/photonGeocoder'
 
 type PlaceNameLookup = { key: string; placeName: string | null }

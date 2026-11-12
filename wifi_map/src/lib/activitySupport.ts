@@ -23,11 +23,21 @@ export type ActivityRating = {
 }
 
 const MEGABITS_PER_GIGABYTE = 8_000
+const SECONDS_PER_MINUTE = 60
+const SECONDS_PER_HOUR = 3_600
+// Units switch at 90 rather than 60, so 70 seconds reads as "70 seconds" instead of rounding
+// to "1 minute".
+const MAX_SECONDS_SHOWN_AS_SECONDS = 90
+const MAX_SECONDS_SHOWN_AS_MINUTES = 90 * SECONDS_PER_MINUTE
 
-const byTier =
-  (poor: string, ok: string, great: string) =>
-  (tier: SupportTier): string =>
-    ({ poor, ok, great })[tier]
+const WORKS_SCORE = 0.5
+const GREAT_SCORE = 1
+
+function byTier(poor: string, ok: string, great: string) {
+  return function verdictForTier(tier: SupportTier): string {
+    return { poor, ok, great }[tier]
+  }
+}
 
 // Sources: Netflix (3 Mbps HD, 15 Mbps 4K), FCC broadband guide (student 5–25 Mbps, browsing
 // 1 Mbps, file downloads 10 Mbps, gaming 3–4 Mbps), Zoom group video (1.0 Mbps up for high
@@ -71,20 +81,21 @@ const ACTIVITIES: Activity[] = [
 function scoreAgainst(value: number, { works, great }: Threshold): number {
   const higherIsBetter = great > works
   const belowWorks = higherIsBetter ? value < works : value > works
-  if (belowWorks) return 0.5 * (higherIsBetter ? value / works : works / value)
-  return Math.min(1, 0.5 + 0.5 * ((value - works) / (great - works)))
+  if (belowWorks) return WORKS_SCORE * (higherIsBetter ? value / works : works / value)
+  const progressTowardGreat = (value - works) / (great - works)
+  return Math.min(GREAT_SCORE, WORKS_SCORE + (GREAT_SCORE - WORKS_SCORE) * progressTowardGreat)
 }
 
 function tierFor(score: number): SupportTier {
-  if (score >= 1) return 'great'
-  if (score >= 0.5) return 'ok'
+  if (score >= GREAT_SCORE) return 'great'
+  if (score >= WORKS_SCORE) return 'ok'
   return 'poor'
 }
 
 function formatDuration(seconds: number): string {
-  let [value, unit] = [seconds / 3600, 'hour']
-  if (seconds < 90) [value, unit] = [seconds, 'second']
-  else if (seconds < 90 * 60) [value, unit] = [seconds / 60, 'minute']
+  let [value, unit] = [seconds / SECONDS_PER_HOUR, 'hour']
+  if (seconds < MAX_SECONDS_SHOWN_AS_SECONDS) [value, unit] = [seconds, 'second']
+  else if (seconds < MAX_SECONDS_SHOWN_AS_MINUTES) [value, unit] = [seconds / SECONDS_PER_MINUTE, 'minute']
   return new Intl.NumberFormat(undefined, {
     style: 'unit',
     unit,
@@ -96,7 +107,7 @@ function formatDuration(seconds: number): string {
 // An activity is only as good as its weakest requirement, e.g. a video call with fast download
 // but slow upload still freezes for everyone else. Unmeasured values are left out.
 export function rateActivities(speeds: NetworkSpeeds): ActivityRating[] {
-  return ACTIVITIES.map((activity) => {
+  return ACTIVITIES.map(function rateActivity(activity) {
     const scores = [scoreAgainst(speeds.downloadMbps, activity.downloadMbps)]
     if (activity.uploadMbps && speeds.uploadMbps !== undefined) {
       scores.push(scoreAgainst(speeds.uploadMbps, activity.uploadMbps))

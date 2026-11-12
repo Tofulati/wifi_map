@@ -9,5 +9,5 @@
 }
 
 .search-control .maplibregl-ctrl-geocoder .suggestions {
-  font-size: 13px;
+  font-size: var(--font-size-sm);
 }

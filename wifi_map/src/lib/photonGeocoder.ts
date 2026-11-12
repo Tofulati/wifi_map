@@ -1,6 +1,6 @@
 import type { CarmenGeojsonFeature, MaplibreGeocoderApi } from '@maplibre/maplibre-gl-geocoder'
 import type { Feature, FeatureCollection, Point } from 'geojson'
-import type { Coordinates } from './networkReading'
+import type { Coordinates } from './coordinates'
 
 // Komoot's public demo server: no API key, but only for "reasonable" traffic and with no uptime
 // guarantee. Point these at a self-hosted Photon if the app outgrows that.
@@ -38,7 +38,7 @@ function toCarmenFeature(feature: Feature<Point, PhotonProperties>): CarmenGeojs
 }
 
 export const photonGeocoderApi: MaplibreGeocoderApi = {
-  forwardGeocode: async ({ query, limit, proximity }) => {
+  async forwardGeocode({ query, limit, proximity }) {
     const params = new URLSearchParams({ q: String(query) })
     if (limit) params.set('limit', String(limit))
     if (proximity) {

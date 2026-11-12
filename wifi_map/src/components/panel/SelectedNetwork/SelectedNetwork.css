@@ -1,7 +1,7 @@
 .selected-network-location {
   margin-top: 2px;
-  color: #444;
-  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
 }
 
 .selected-network-average {
@@ -12,13 +12,13 @@
 
 .selected-network-detail {
   margin: 0;
-  color: #666;
-  font-size: 12px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
 }
 
 .selected-network-readings > summary {
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
 }
 
 .selected-network-reading-list {
@@ -32,5 +32,5 @@
 
 .selected-network-reading-list > li + li {
   padding-top: 8px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-divider);
 }

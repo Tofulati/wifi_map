@@ -1,4 +1,4 @@
-import { WifiMap } from './components/WifiMap'
+import { WifiMap } from './components/map/WifiMap/WifiMap'
 
 function App() {
   return <WifiMap />

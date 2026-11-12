@@ -1,6 +1,7 @@
-import type { NearbyNetwork } from '../lib/nearbyReadings'
+import type { NearbyNetwork } from '../../../lib/nearbyReadings'
+import { NetworkSummary } from '../NetworkSummary/NetworkSummary'
+import { SpeedFigures } from '../SpeedFigures/SpeedFigures'
 import './NetworkSpeedCard.css'
-import { NetworkSummary, SpeedFigures } from './NetworkSummary'
 
 type NetworkSpeedCardProps = NearbyNetwork
 

@@ -1,9 +1,12 @@
-import { useState } from 'react'
-import { cleanNetworkName, networkNameError, resolveNetworkName } from '../lib/networkName'
-import { takeNetworkReading, type NetworkReading } from '../lib/networkReading'
-import { loadLastNetworkName, saveLastNetworkName } from '../lib/readingStore'
+import { useState, type ChangeEvent } from 'react'
+import { formatCoordinates } from '../../../lib/coordinates'
+import { cleanNetworkName, networkNameError, resolveNetworkName } from '../../../lib/networkName'
+import { takeNetworkReading, type NetworkReading } from '../../../lib/networkReading'
+import { loadLastNetworkName, saveLastNetworkName } from '../../../lib/readingStore'
+import { SpeedFigures } from '../../network/SpeedFigures/SpeedFigures'
 import './MeasurePanel.css'
-import { SpeedFigures } from './NetworkSummary'
+
+const KNOWN_NETWORKS_LIST_ID = 'known-networks'
 
 type MeasureState =
   | { status: 'idle' }
@@ -24,7 +27,11 @@ export function MeasurePanel({ knownNetworkNames, onReading }: MeasurePanelProps
   const resolvedName = resolveNetworkName(networkInput, knownNetworkNames)
   const matchesExistingSpelling = !nameError && resolvedName !== cleanNetworkName(networkInput)
 
-  const handleMeasure = async () => {
+  function handleNetworkInputChange(event: ChangeEvent<HTMLInputElement>) {
+    setNetworkInput(event.target.value)
+  }
+
+  async function handleMeasure() {
     if (nameError) return
     setState({ status: 'measuring' })
     try {
@@ -43,9 +50,9 @@ export function MeasurePanel({ knownNetworkNames, onReading }: MeasurePanelProps
       <label className="measure-panel-field">
         Network name
         <input
-          list="known-networks"
+          list={KNOWN_NETWORKS_LIST_ID}
           value={networkInput}
-          onChange={(event) => setNetworkInput(event.target.value)}
+          onChange={handleNetworkInputChange}
           placeholder="e.g. CafeNet"
           autoComplete="off"
           autoCapitalize="off"
@@ -53,7 +60,7 @@ export function MeasurePanel({ knownNetworkNames, onReading }: MeasurePanelProps
           spellCheck={false}
         />
       </label>
-      <datalist id="known-networks">
+      <datalist id={KNOWN_NETWORKS_LIST_ID}>
         {knownNetworkNames.map((name) => (
           <option key={name} value={name} />
         ))}
@@ -74,9 +81,7 @@ export function MeasurePanel({ knownNetworkNames, onReading }: MeasurePanelProps
       {state.status === 'done' && (
         <div>
           <SpeedFigures speeds={state.reading} /> on {state.reading.networkName}
-          <div className="measure-panel-detail">
-            {state.reading.latitude.toFixed(5)}, {state.reading.longitude.toFixed(5)}
-          </div>
+          <div className="measure-panel-detail">{formatCoordinates(state.reading)}</div>
         </div>
       )}
       {state.status === 'error' && <div className="measure-panel-error">{state.message}</div>}

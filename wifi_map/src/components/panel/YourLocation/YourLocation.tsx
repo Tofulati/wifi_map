@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
-import { usePlaceName } from '../hooks/usePlaceName'
-import { NEARBY_RADIUS_METERS, type NearbyNetwork } from '../lib/nearbyReadings'
-import type { Coordinates, NetworkReading } from '../lib/networkReading'
-import { MeasurePanel } from './MeasurePanel'
-import { PlaceDetails } from './PlaceDetails'
+import { usePlaceName } from '../../../hooks/usePlaceName'
+import type { Coordinates } from '../../../lib/coordinates'
+import { NEARBY_RADIUS_METERS, type NearbyNetwork } from '../../../lib/nearbyReadings'
+import type { NetworkReading } from '../../../lib/networkReading'
+import { MeasurePanel } from '../MeasurePanel/MeasurePanel'
+import { PlaceDetails } from '../PlaceDetails/PlaceDetails'
 import './YourLocation.css'
 
 export type UserLocation =

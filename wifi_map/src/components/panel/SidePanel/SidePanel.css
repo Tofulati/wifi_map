@@ -8,7 +8,7 @@
   z-index: 3;
   width: 15%;
   min-width: min(320px, 100%);
-  background: white;
+  background: var(--color-surface);
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
   transition: transform 0.25s ease;
 }
@@ -25,7 +25,7 @@
   box-sizing: border-box;
   padding: 12px 16px 24px;
   overflow-y: auto;
-  font-size: 14px;
+  font-size: var(--font-size-md);
 }
 
 /* Hangs off the panel's right edge, so it stays on screen when the panel slides away. */
@@ -38,7 +38,7 @@
   padding: 0;
   border: none;
   border-radius: 0 6px 6px 0;
-  background: white;
+  background: var(--color-surface);
   box-shadow: 2px 0 4px rgba(0, 0, 0, 0.2);
   font-size: 20px;
   cursor: pointer;
@@ -57,5 +57,5 @@
 
 .side-panel-heading {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--font-size-lg);
 }

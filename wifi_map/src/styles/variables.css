@@ -1,0 +1,17 @@
+:root {
+  --color-surface: white;
+  --color-text-secondary: #444;
+  --color-text-muted: #666;
+  --color-divider: #eee;
+
+  /* Same red / yellow / green as the map's speed colors in WifiMap.styles.ts, which MapLibre
+     needs as literal values and so can't read from here. */
+  --color-speed-poor: rgb(215, 48, 39);
+  --color-speed-ok: rgb(254, 224, 139);
+  --color-speed-great: rgb(26, 152, 80);
+
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+}

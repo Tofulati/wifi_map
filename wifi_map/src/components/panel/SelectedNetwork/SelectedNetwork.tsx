@@ -1,7 +1,9 @@
-import { usePlaceName } from '../hooks/usePlaceName'
-import { summarizeNetwork } from '../lib/nearbyReadings'
-import { formatCoordinates, type Coordinates, type NetworkReading } from '../lib/networkReading'
-import { NetworkSummary, SpeedFigures } from './NetworkSummary'
+import { usePlaceName } from '../../../hooks/usePlaceName'
+import { formatCoordinates, type Coordinates } from '../../../lib/coordinates'
+import { summarizeNetwork } from '../../../lib/nearbyReadings'
+import type { NetworkReading } from '../../../lib/networkReading'
+import { NetworkSummary } from '../../network/NetworkSummary/NetworkSummary'
+import { SpeedFigures } from '../../network/SpeedFigures/SpeedFigures'
 import './SelectedNetwork.css'
 
 type SelectedNetworkProps = {

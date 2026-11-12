@@ -1,6 +1,6 @@
-import type { NearbyNetwork } from '../lib/nearbyReadings'
-import { formatCoordinates, type Coordinates } from '../lib/networkReading'
-import { NetworkSpeedCard } from './NetworkSpeedCard'
+import { formatCoordinates, type Coordinates } from '../../../lib/coordinates'
+import type { NearbyNetwork } from '../../../lib/nearbyReadings'
+import { NetworkSpeedCard } from '../../network/NetworkSpeedCard/NetworkSpeedCard'
 import './PlaceDetails.css'
 
 type PlaceDetailsProps = {

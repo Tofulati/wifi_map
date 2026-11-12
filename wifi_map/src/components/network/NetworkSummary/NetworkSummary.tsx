@@ -1,17 +1,14 @@
-import { rateActivities } from '../lib/activitySupport'
-import type { NetworkSpeeds } from '../lib/networkReading'
+import { rateActivities } from '../../../lib/activitySupport'
+import type { NetworkSpeeds } from '../../../lib/networkReading'
+import './NetworkSummary.css'
 
-export function SpeedFigures({ speeds }: { speeds: NetworkSpeeds }) {
-  return (
-    <span>
-      <strong>{speeds.downloadMbps.toFixed(1)} Mbps</strong> down
-      {speeds.uploadMbps !== undefined && ` · ${speeds.uploadMbps.toFixed(1)} up`}
-      {speeds.latencyMs !== undefined && ` · ${Math.round(speeds.latencyMs)} ms ping`}
-    </span>
-  )
+const PERCENT = 100
+
+type NetworkSummaryProps = {
+  speeds: NetworkSpeeds
 }
 
-export function NetworkSummary({ speeds }: { speeds: NetworkSpeeds }) {
+export function NetworkSummary({ speeds }: NetworkSummaryProps) {
   const missing = [
     speeds.uploadMbps === undefined && 'upload',
     speeds.latencyMs === undefined && 'ping',
@@ -34,13 +31,14 @@ export function NetworkSummary({ speeds }: { speeds: NetworkSpeeds }) {
               role="meter"
               aria-label={rating.label}
               aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(rating.score * 100)}
+              aria-valuemax={PERCENT}
+              aria-valuenow={Math.round(rating.score * PERCENT)}
               aria-valuetext={rating.verdict}
             >
+              {/* The fill width is a continuous runtime value, which a class can't express. */}
               <span
                 className={`network-summary-fill network-summary-${rating.tier}`}
-                style={{ width: `${rating.score * 100}%` }}
+                style={{ width: `${rating.score * PERCENT}%` }}
               />
             </span>
             <span className="network-summary-icon" aria-hidden="true">

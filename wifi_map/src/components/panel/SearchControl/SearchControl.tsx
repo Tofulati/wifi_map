@@ -4,8 +4,8 @@ import * as maplibregl from 'maplibre-gl'
 import type { FitBoundsOptions, Map as MaplibreMap } from 'maplibre-gl'
 import { useEffect, useEffectEvent, useRef } from 'react'
 import { useMap } from 'react-map-gl/maplibre'
-import type { Coordinates } from '../lib/networkReading'
-import { photonGeocoderApi } from '../lib/photonGeocoder'
+import type { Coordinates } from '../../../lib/coordinates'
+import { photonGeocoderApi } from '../../../lib/photonGeocoder'
 import './SearchControl.css'
 
 export type SearchResult = {

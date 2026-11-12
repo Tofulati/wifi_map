@@ -12,6 +12,7 @@ import type {
   Polygon,
   Position,
 } from 'geojson'
+import { METERS_PER_DEGREE_LATITUDE, metersPerDegreeLongitude } from './coordinates'
 import type { NetworkReading } from './networkReading'
 
 export type SpeedBandProperties = { minMbps: number }
@@ -43,14 +44,8 @@ const MAX_GRID_POINTS = 5_000
 // IDW drifts toward the average of all readings away from any one reading; power 3 (vs the usual
 // 2) keeps a slow area's edges from being pulled up by fast readings a few hundred meters away.
 const IDW_POWER = 3
-const METERS_PER_DEGREE_LATITUDE = 111_320
-const DEGREES_TO_RADIANS = Math.PI / 180
 
 export const EMPTY_CONTOURS: SpeedContours = { type: 'FeatureCollection', features: [] }
-
-function metersPerDegreeLongitude(latitude: number): number {
-  return METERS_PER_DEGREE_LATITUDE * Math.cos(latitude * DEGREES_TO_RADIANS)
-}
 
 function paddedBounds(positions: Position[], padMeters: number): BBox {
   const longitudes = positions.map((position) => position[0])
@@ -141,7 +136,7 @@ function closeGridBorder(grid: SpeedGrid): SpeedGrid {
 
   return {
     ...grid,
-    features: grid.features.map((point) => {
+    features: grid.features.map(function dropIfOnBorder(point) {
       const [longitude, latitude] = point.geometry.coordinates
       const isOnBorder =
         longitude === west || longitude === east || latitude === south || latitude === north

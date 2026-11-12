@@ -48,8 +48,9 @@ const KNOWN_NETWORKS_LIST_ID = 'known-networks'
 
 ## 3. Styling lives in separate files
 
-- Never write `style={{ ... }}` in JSX. Use `className`.
-- Component styles go in a CSS file next to the component (`MeasurePanel.css`, imported by `MeasurePanel.tsx`). Only app-wide styles go in `index.css`.
+- Never write `style={{ ... }}` in JSX. Use `className`. The one exception is a continuous runtime value no class can express, like a bar's width percentage; keep everything else about that element in CSS.
+- Each component gets its own folder under `src/components/<area>/` (`map`, `panel`, `network`) holding `<Component>.tsx` and `<Component>.css`, e.g. `components/panel/MeasurePanel/MeasurePanel.css` imported by `MeasurePanel.tsx`.
+- Only app-wide styles go in `src/styles/global.css`. Colors and font sizes used by more than one component are CSS custom properties in `src/styles/variables.css`; use `var(--color-text-muted)` rather than repeating `#666`.
 - Class names are kebab-case and prefixed with the component name: `measure-panel`, `measure-panel-error`.
 - Express conditional styling with modifier classes or `data-*` attributes. Don't compute style objects.
 - When a library only accepts style objects (react-map-gl `<Map style>`, MapLibre layer `paint`/`layout`), define them as named constants in `<Component>.styles.ts` next to the component and import them.

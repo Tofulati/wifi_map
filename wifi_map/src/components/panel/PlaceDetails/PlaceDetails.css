@@ -5,12 +5,12 @@
 }
 
 .place-details-name {
-  font-size: 14px;
+  font-size: var(--font-size-md);
 }
 
 .place-details-coordinates {
-  color: #666;
-  font-size: 12px;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
 }
 
 .place-details-empty {
@@ -18,7 +18,7 @@
   padding: 8px;
   background: #f4f4f4;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: var(--font-size-sm);
 }
 
 .place-details-networks {
@@ -32,5 +32,5 @@
 
 .place-details-networks > li + li {
   padding-top: 12px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-divider);
 }

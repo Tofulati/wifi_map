@@ -1,22 +1,11 @@
 import SpeedTest, { type MeasurementConfig } from '@cloudflare/speedtest'
+import type { Coordinates } from './coordinates'
 
 // Upload and latency are optional because readings saved before they were measured don't have them.
 export type NetworkSpeeds = {
   downloadMbps: number
   uploadMbps?: number
   latencyMs?: number
-}
-
-export type Coordinates = {
-  longitude: number
-  latitude: number
-}
-
-// Five decimals is about a meter, finer than phone GPS can actually tell apart.
-const COORDINATE_DECIMALS = 5
-
-export function formatCoordinates({ latitude, longitude }: Coordinates): string {
-  return `${latitude.toFixed(COORDINATE_DECIMALS)}, ${longitude.toFixed(COORDINATE_DECIMALS)}`
 }
 
 export type NetworkReading = NetworkSpeeds &
@@ -42,6 +31,7 @@ const MEASUREMENTS: MeasurementConfig[] = [
 ]
 
 const SPEED_TEST_TIME_LIMIT_MS = 30_000
+const BITS_PER_MEGABIT = 1e6
 
 export const LOCATION_OPTIONS: PositionOptions = {
   enableHighAccuracy: true,
@@ -50,7 +40,7 @@ export const LOCATION_OPTIONS: PositionOptions = {
 }
 
 export function measureSpeeds(): Promise<NetworkSpeeds> {
-  return new Promise((resolve, reject) => {
+  return new Promise(function runSpeedTest(resolve, reject) {
     let lastError: string | undefined
     const speedTest = new SpeedTest({
       measurements: MEASUREMENTS,
@@ -60,11 +50,11 @@ export function measureSpeeds(): Promise<NetworkSpeeds> {
       logAimApiUrl: null,
     })
 
-    speedTest.onError = (message) => {
+    speedTest.onError = function rememberError(message) {
       lastError = message
     }
     // Only download is required: a reading without upload or latency is still worth mapping.
-    speedTest.onFinish = (results) => {
+    speedTest.onFinish = function reportSpeeds(results) {
       const downloadBitsPerSecond = results.getDownloadBandwidth()
       if (downloadBitsPerSecond === undefined) {
         reject(new Error(lastError ?? 'Speed test finished without a usable download measurement'))
@@ -72,8 +62,9 @@ export function measureSpeeds(): Promise<NetworkSpeeds> {
       }
       const uploadBitsPerSecond = results.getUploadBandwidth()
       resolve({
-        downloadMbps: downloadBitsPerSecond / 1e6,
-        uploadMbps: uploadBitsPerSecond === undefined ? undefined : uploadBitsPerSecond / 1e6,
+        downloadMbps: downloadBitsPerSecond / BITS_PER_MEGABIT,
+        uploadMbps:
+          uploadBitsPerSecond === undefined ? undefined : uploadBitsPerSecond / BITS_PER_MEGABIT,
         latencyMs: results.getUnloadedLatency(),
       })
     }
@@ -81,7 +72,7 @@ export function measureSpeeds(): Promise<NetworkSpeeds> {
 }
 
 export function getCurrentPosition(): Promise<GeolocationPosition> {
-  return new Promise((resolve, reject) => {
+  return new Promise(function requestPosition(resolve, reject) {
     if (!('geolocation' in navigator)) {
       reject(new Error('This browser does not support geolocation'))
       return
@@ -89,7 +80,9 @@ export function getCurrentPosition(): Promise<GeolocationPosition> {
     navigator.geolocation.getCurrentPosition(
       resolve,
       // GeolocationPositionError isn't an Error subclass, so wrap it to keep `.message` handling uniform.
-      (error) => reject(new Error(`Location unavailable: ${error.message}`)),
+      function rejectWithError(error) {
+        reject(new Error(`Location unavailable: ${error.message}`))
+      },
       LOCATION_OPTIONS,
     )
   })

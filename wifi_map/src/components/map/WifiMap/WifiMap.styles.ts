@@ -11,6 +11,7 @@ export const MAP_CONTAINER_STYLE: CSSProperties = { width: '100%', height: '100%
 const SLOW_MBPS = 5
 const MEDIUM_MBPS = 25
 const FAST_MBPS = 100
+// Keep in sync with --color-speed-* in src/styles/variables.css.
 const SLOW_COLOR = 'rgb(215, 48, 39)'
 const MEDIUM_COLOR = 'rgb(254, 224, 139)'
 const FAST_COLOR = 'rgb(26, 152, 80)'

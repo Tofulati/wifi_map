@@ -18,27 +18,27 @@ import type {
 } from 'react-map-gl/maplibre'
 import type { FeatureCollection, GeoJsonProperties, Point } from 'geojson'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { createDemoReadings } from '../data/demoReadings'
+import { createDemoReadings } from '../../../data/demoReadings'
+import type { Coordinates } from '../../../lib/coordinates'
 import {
   NEARBY_RADIUS_METERS,
   summarizeNetworksNear,
   type NearbyNetwork,
-} from '../lib/nearbyReadings'
-import { groupByNetworkName } from '../lib/networkName'
+} from '../../../lib/nearbyReadings'
+import { groupByNetworkName } from '../../../lib/networkName'
 import {
   LOCATION_OPTIONS,
-  type Coordinates,
   type NetworkReading,
   type NetworkSpeeds,
-} from '../lib/networkReading'
-import { loadReadings, saveReadings } from '../lib/readingStore'
-import { computeSpeedSurfaces, EMPTY_CONTOURS } from '../lib/speedContours'
-import { NetworkSpeedCard } from './NetworkSpeedCard'
-import { PlaceDetails } from './PlaceDetails'
-import { SearchControl, type SearchResult } from './SearchControl'
-import { SelectedNetwork } from './SelectedNetwork'
-import { SidePanel } from './SidePanel'
-import { YourLocation, type UserLocation } from './YourLocation'
+} from '../../../lib/networkReading'
+import { loadReadings, saveReadings } from '../../../lib/readingStore'
+import { computeSpeedSurfaces, EMPTY_CONTOURS } from '../../../lib/speedContours'
+import { NetworkSpeedCard } from '../../network/NetworkSpeedCard/NetworkSpeedCard'
+import { PlaceDetails } from '../../panel/PlaceDetails/PlaceDetails'
+import { SearchControl, type SearchResult } from '../../panel/SearchControl/SearchControl'
+import { SelectedNetwork } from '../../panel/SelectedNetwork/SelectedNetwork'
+import { SidePanel } from '../../panel/SidePanel/SidePanel'
+import { YourLocation, type UserLocation } from '../../panel/YourLocation/YourLocation'
 import './WifiMap.css'
 import {
   MAP_CONTAINER_STYLE,
@@ -63,6 +63,7 @@ const USER_LOCATION_ZOOM = 15
 const INITIAL_VIEW_STATE = { longitude: -122.4152, latitude: 37.7759, zoom: USER_LOCATION_ZOOM }
 const POPUP_OFFSET_PX = 10
 const POPUP_MAX_WIDTH = '280px'
+const MAP_CONTROLS_POSITION = 'bottom-right'
 
 // Older readings lack upload and latency, so those get their own counts instead of point_count;
 // `get` returns null for a missing property.
@@ -337,10 +338,10 @@ export function WifiMap() {
       touchPitch={false}
       onLoad={handleLoad}
     >
-      <NavigationControl position="bottom-right" showCompass={false} />
+      <NavigationControl position={MAP_CONTROLS_POSITION} showCompass={false} />
       <GeolocateControl
         ref={geolocateControlRef}
-        position="bottom-right"
+        position={MAP_CONTROLS_POSITION}
         positionOptions={LOCATION_OPTIONS}
         onGeolocate={handleGeolocate}
         onError={handleGeolocateError}

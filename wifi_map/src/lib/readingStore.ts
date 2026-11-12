@@ -4,8 +4,9 @@ import type { NetworkReading } from './networkReading'
 const STORAGE_KEY = 'wifi-map:readings'
 const LAST_NETWORK_KEY = 'wifi-map:last-network'
 
-const isFiniteNumber = (field: unknown): field is number =>
-  typeof field === 'number' && Number.isFinite(field)
+function isFiniteNumber(field: unknown): field is number {
+  return typeof field === 'number' && Number.isFinite(field)
+}
 
 // Stored data outlives code changes and can be edited in devtools, so drop any entry that no
 // longer has the shape the map expects instead of letting one bad entry break rendering.

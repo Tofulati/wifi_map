@@ -1,6 +1,7 @@
 import { distance } from '@turf/distance'
+import type { Coordinates } from './coordinates'
 import { groupByNetworkName } from './networkName'
-import type { Coordinates, NetworkReading, NetworkSpeeds } from './networkReading'
+import type { NetworkReading, NetworkSpeeds } from './networkReading'
 
 // Roughly one building or cafe. Indoor GPS is often off by 20–50 m, so a tighter radius would
 // make a spot you already measured look unmeasured.

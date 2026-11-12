@@ -61,7 +61,7 @@ export function groupByNetworkName<T extends { networkName: string }>(items: T[]
 // Applies the same rules to a whole list: the first spelling seen for each network wins.
 export function canonicalizeNetworkNames<T extends { networkName: string }>(items: T[]): T[] {
   const displayNameByKey = new Map<string, string>()
-  return items.map((item) => {
+  return items.map(function canonicalize(item) {
     const cleaned = cleanNetworkName(item.networkName) || UNNAMED_NETWORK
     const key = networkNameKey(cleaned)
     const displayName = displayNameByKey.get(key) ?? cleaned
