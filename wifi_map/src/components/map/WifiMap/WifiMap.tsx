@@ -19,6 +19,11 @@ import type {
 import type { FeatureCollection, GeoJsonProperties, Point } from 'geojson'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { createDemoReadings } from '../../../data/demoReadings'
+import {
+  loadContributionProgress,
+  recordContribution,
+  type ContributionProgress,
+} from '../../../lib/contributionRewards'
 import type { Coordinates } from '../../../lib/coordinates'
 import {
   NEARBY_RADIUS_METERS,
@@ -43,6 +48,7 @@ import {
 import { supabaseConfigurationMessage } from '../../../lib/supabaseClient'
 import { computeSpeedSurfaces, EMPTY_CONTOURS } from '../../../lib/speedContours'
 import { NetworkSpeedCard } from '../../network/NetworkSpeedCard/NetworkSpeedCard'
+import { ContributionStatus } from '../../panel/ContributionStatus/ContributionStatus'
 import { PlaceDetails } from '../../panel/PlaceDetails/PlaceDetails'
 import { SearchControl, type SearchResult } from '../../panel/SearchControl/SearchControl'
 import { SelectedNetwork } from '../../panel/SelectedNetwork/SelectedNetwork'
@@ -176,6 +182,9 @@ function readingFromFeature(feature: MapGeoJSONFeature | undefined): ReadingDot 
 export function WifiMap() {
   const [hoverInfo, setHoverInfo] = useState<ReadingDot | null>(null)
   const [readings, setReadings] = useState(loadReadings)
+  const [contributionProgress, setContributionProgress] =
+    useState<ContributionProgress>(loadContributionProgress)
+  const [lastEarned, setLastEarned] = useState<number | null>(null)
   // Kept apart from `readings` so fake data is never written to localStorage.
   const [demoReadings, setDemoReadings] = useState<NetworkReading[] | null>(null)
   const [selection, setSelection] = useState<PanelSelection>(YOUR_LOCATION)
@@ -316,10 +325,17 @@ export function WifiMap() {
   // A reading carries a fresh GPS fix, which is newer than the last one the geolocate control got.
   function handleReading(reading: NetworkReading) {
     setReadings((previous) => [...previous, ensureReadingIdentity(reading)])
+    applyContributionReward()
     setUserLocation({
       status: 'found',
       coordinates: { longitude: reading.longitude, latitude: reading.latitude },
     })
+  }
+
+  function applyContributionReward() {
+    const reward = recordContribution()
+    setContributionProgress(reward.progress)
+    setLastEarned(reward.earned)
   }
 
   function handleSearchResult(result: SearchResult) {
@@ -474,6 +490,11 @@ export function WifiMap() {
       )}
 
       <SidePanel>
+        <ContributionStatus
+          progress={contributionProgress}
+          lastEarned={lastEarned}
+          onTestContribution={import.meta.env.DEV ? applyContributionReward : undefined}
+        />
         <SearchControl
           zoom={USER_LOCATION_ZOOM}
           onResult={handleSearchResult}
