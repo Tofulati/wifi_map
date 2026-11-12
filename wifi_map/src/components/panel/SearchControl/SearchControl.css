@@ -6,8 +6,20 @@
   max-width: none;
   font-size: 15px;
   line-height: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  box-shadow: 0 2px 8px rgb(23 32 29 / 10%);
 }
 
 .search-control .maplibregl-ctrl-geocoder .suggestions {
   font-size: var(--font-size-sm);
+}
+
+.search-control .maplibregl-ctrl-geocoder--input {
+  min-height: 44px;
+  color: var(--color-text);
+}
+
+.search-control .maplibregl-ctrl-geocoder--icon-search {
+  top: 12px;
 }

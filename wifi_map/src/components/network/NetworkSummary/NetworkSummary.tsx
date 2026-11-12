@@ -23,9 +23,6 @@ export function NetworkSummary({ speeds }: NetworkSummaryProps) {
               <span>{rating.label}</span>
               <span className="network-summary-verdict">{rating.verdict}</span>
             </div>
-            <span className="network-summary-icon" aria-hidden="true">
-              🐢
-            </span>
             <span
               className="network-summary-track"
               role="meter"
@@ -40,9 +37,6 @@ export function NetworkSummary({ speeds }: NetworkSummaryProps) {
                 className={`network-summary-fill network-summary-${rating.tier}`}
                 style={{ width: `${rating.score * PERCENT}%` }}
               />
-            </span>
-            <span className="network-summary-icon" aria-hidden="true">
-              🐇
             </span>
           </li>
         ))}

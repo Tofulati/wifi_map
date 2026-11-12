@@ -1,13 +1,25 @@
+.selected-network-header {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
 .selected-network-location {
-  margin-top: 2px;
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
+  line-height: 1.35;
 }
 
 .selected-network-average {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  margin-top: 14px;
+}
+
+.selected-network-speed {
+  font-size: var(--font-size-lg);
+  line-height: 1.35;
 }
 
 .selected-network-detail {
@@ -17,15 +29,20 @@
 }
 
 .selected-network-readings > summary {
+  padding: 8px 0;
+  border-top: 1px solid var(--color-divider);
+  border-bottom: 1px solid var(--color-divider);
   cursor: pointer;
   font-size: var(--font-size-sm);
+  font-weight: 600;
+  list-style-position: inside;
 }
 
 .selected-network-speed-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 12px;
-  margin-top: 8px;
+  margin: 10px 0 0;
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
 }
@@ -58,7 +75,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -71,6 +88,7 @@
 .selected-network-reading {
   position: relative;
   padding-left: 14px;
+  line-height: 1.4;
 }
 
 .selected-network-reading::before {

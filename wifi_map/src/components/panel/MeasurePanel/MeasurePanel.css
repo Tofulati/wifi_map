@@ -19,9 +19,27 @@
 }
 
 .measure-panel-field input {
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  color: var(--color-text);
+  background: var(--color-surface);
   font-size: var(--font-size-md);
+}
+
+.measure-panel-field input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.measure-panel button {
+  min-height: 38px;
+  padding: 7px 12px;
+  font-weight: 600;
 }
 
 .measure-panel-error {
   color: var(--color-speed-poor);
+  font-size: var(--font-size-sm);
 }

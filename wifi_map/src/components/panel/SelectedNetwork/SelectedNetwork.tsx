@@ -61,13 +61,15 @@ export function NetworkDetails({
 
   return (
     <>
-      <header>
+      <header className="selected-network-header">
         <h2 className="side-panel-heading">{networkName}</h2>
         <div className="selected-network-location">{location}</div>
       </header>
 
       <div className="selected-network-average">
-        <SpeedFigures speeds={speeds} />
+        <div className="selected-network-speed">
+          <SpeedFigures speeds={speeds} />
+        </div>
         <div className="selected-network-detail">{averageLabel}</div>
         <NetworkSummary speeds={speeds} />
       </div>

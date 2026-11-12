@@ -1,8 +1,14 @@
 :root {
-  --color-surface: white;
+  --color-surface: #fff;
+  --color-surface-subtle: #f7f8f8;
+  --color-text: #17201d;
   --color-text-secondary: #444;
   --color-text-muted: #666;
-  --color-divider: #eee;
+  --color-divider: #e3e7e5;
+  --color-border: #b6bfbb;
+  --color-accent: #1d6b52;
+  --color-accent-strong: #14503d;
+  --color-focus: #0b6fdb;
 
   /* Same red / yellow / green as the map's speed colors in WifiMap.styles.ts, which MapLibre
      needs as literal values and so can't read from here. */
@@ -14,4 +20,5 @@
   --font-size-sm: 13px;
   --font-size-md: 14px;
   --font-size-lg: 16px;
+  --font-size-xl: 20px;
 }
