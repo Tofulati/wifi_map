@@ -11,6 +11,12 @@ Before writing any new function, component, hook, utility, module, or feature, d
 - Search the project for code that already does this or something close. Search by behavior, not just by name.
 - If something close exists, extend or reuse it. Do not create a parallel version.
 
+### Component reuse
+- Prefer composing, configuring, or extending an existing component over creating a new one.
+- Reuse a component when its structure, interaction pattern, or visual role is substantially the same, even when the displayed data or a small part of its behavior differs.
+- Create a new component only when the functionality, responsibility, or user interaction is genuinely different and reuse would make the existing component confusing or overly conditional.
+- Before adding a component, identify the existing components considered, explain why they cannot be reused or extended, and keep the new component as narrowly scoped as possible.
+
 ## 2. Check what's already installed
 - Read the project's dependency manifests (`package.json`, `requirements.txt`, `pyproject.toml`, `Cargo.toml`, `go.mod`, etc.) and check whether an installed library already provides this.
 - Check the language's standard library and the platform's built-in APIs (browser, Node, framework features) too.
