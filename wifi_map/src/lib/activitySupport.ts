@@ -8,6 +8,8 @@ type Threshold = { works: number; great: number }
 
 type Activity = {
   label: string
+  icons: Record<SupportTier, string>
+  greatIcon: string
   downloadMbps: Threshold
   uploadMbps?: Threshold
   latencyMs?: Threshold
@@ -20,6 +22,8 @@ export type ActivityRating = {
   score: number
   tier: SupportTier
   verdict: string
+  icon: string
+  greatIcon: string
 }
 
 const MEGABITS_PER_GIGABYTE = 8_000
@@ -46,11 +50,15 @@ function byTier(poor: string, ok: string, great: string) {
 const ACTIVITIES: Activity[] = [
   {
     label: 'Streaming video',
+    icons: { poor: '🐌', ok: '📺', great: '🎬' },
+    greatIcon: '🎬',
     downloadMbps: { works: 3, great: 15 },
     verdict: byTier('Buffering likely', 'HD video', '4K video'),
   },
   {
     label: 'Gaming',
+    icons: { poor: '🐌', ok: '🎮', great: '🏎️' },
+    greatIcon: '🏎️',
     downloadMbps: { works: 3, great: 10 },
     uploadMbps: { works: 0.5, great: 3 },
     latencyMs: { works: 100, great: 50 },
@@ -58,18 +66,24 @@ const ACTIVITIES: Activity[] = [
   },
   {
     label: 'Studying & video classes',
+    icons: { poor: '🐌', ok: '💻', great: '🎓' },
+    greatIcon: '🎓',
     downloadMbps: { works: 5, great: 25 },
     uploadMbps: { works: 1, great: 3.8 },
     verdict: byTier('Choppy calls', 'Good enough', 'Smooth calls'),
   },
   {
     label: 'Browsing & social media',
+    icons: { poor: '🐌', ok: '📱', great: '⚡' },
+    greatIcon: '⚡',
     downloadMbps: { works: 1, great: 10 },
     latencyMs: { works: 200, great: 100 },
     verdict: byTier('Slow pages', 'Fine', 'Snappy'),
   },
   {
     label: 'Downloading files',
+    icons: { poor: '🐌', ok: '📥', great: '🚀' },
+    greatIcon: '🚀',
     downloadMbps: { works: 10, great: 100 },
     verdict: (_tier, { downloadMbps }) =>
       `1 GB in ~${formatDuration(MEGABITS_PER_GIGABYTE / downloadMbps)}`,
@@ -117,6 +131,13 @@ export function rateActivities(speeds: NetworkSpeeds): ActivityRating[] {
     }
     const score = Math.min(...scores)
     const tier = tierFor(score)
-    return { label: activity.label, score, tier, verdict: activity.verdict(tier, speeds) }
+    return {
+      label: activity.label,
+      score,
+      tier,
+      verdict: activity.verdict(tier, speeds),
+      icon: activity.icons[tier],
+      greatIcon: activity.greatIcon,
+    }
   })
 }

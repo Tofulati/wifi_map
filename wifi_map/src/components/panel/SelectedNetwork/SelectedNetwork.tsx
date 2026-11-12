@@ -1,7 +1,7 @@
 import { usePlaceName } from '../../../hooks/usePlaceName'
 import { formatCoordinates, type Coordinates } from '../../../lib/coordinates'
 import { summarizeNetwork } from '../../../lib/nearbyReadings'
-import type { NetworkReading } from '../../../lib/networkReading'
+import { formatRecordedAt, type NetworkReading } from '../../../lib/networkReading'
 import { NetworkSummary } from '../../network/NetworkSummary/NetworkSummary'
 import { SpeedFigures } from '../../network/SpeedFigures/SpeedFigures'
 import './SelectedNetwork.css'
@@ -18,6 +18,12 @@ type SelectedNetworkProps = {
 // in the list anyway.
 function readingKey(reading: NetworkReading) {
   return `${reading.longitude},${reading.latitude},${reading.downloadMbps}`
+}
+
+function speedTier(downloadMbps: number): 'slow' | 'okay' | 'fast' {
+  if (downloadMbps < 5) return 'slow'
+  if (downloadMbps < 25) return 'okay'
+  return 'fast'
 }
 
 export function SelectedNetwork({ networkName, clickedAt, readings }: SelectedNetworkProps) {
@@ -43,11 +49,33 @@ export function SelectedNetwork({ networkName, clickedAt, readings }: SelectedNe
 
       <details className="selected-network-readings">
         <summary>{listLabel}</summary>
+        <div className="selected-network-speed-legend" aria-label="Download speed legend">
+          <span>
+            <i className="selected-network-speed-dot selected-network-speed-slow" aria-hidden="true" />
+            Slow (&lt;5 Mbps)
+          </span>
+          <span>
+            <i className="selected-network-speed-dot selected-network-speed-okay" aria-hidden="true" />
+            Okay (5–25 Mbps)
+          </span>
+          <span>
+            <i className="selected-network-speed-dot selected-network-speed-fast" aria-hidden="true" />
+            Fast (25+ Mbps)
+          </span>
+        </div>
         <ul className="selected-network-reading-list">
           {readingsFastestFirst.map((reading) => (
-            <li key={readingKey(reading)}>
+            <li
+              key={readingKey(reading)}
+              className={`selected-network-reading selected-network-reading-${speedTier(reading.downloadMbps)}`}
+            >
               <SpeedFigures speeds={reading} />
               <div className="selected-network-detail">{formatCoordinates(reading)}</div>
+              {reading.recordedAt && (
+                <div className="selected-network-detail">
+                  Measured {formatRecordedAt(reading.recordedAt)}
+                </div>
+              )}
             </li>
           ))}
         </ul>

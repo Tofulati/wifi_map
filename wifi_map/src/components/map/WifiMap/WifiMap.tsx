@@ -85,7 +85,7 @@ const CLUSTER_PROPERTIES = {
 }
 
 // A dot on the map: one reading, or a cluster of one network's readings averaged together.
-type ReadingDot = NearbyNetwork & { coordinates: Coordinates }
+type ReadingDot = NearbyNetwork & { coordinates: Coordinates; recordedAt?: string }
 
 // The side panel shows one thing at a time: where you are, the network of a reading you
 // clicked, or a place you searched for.
@@ -110,7 +110,11 @@ function networkNameFromSourceId(sourceId: string) {
   return sourceId.slice(READINGS_SOURCE_PREFIX.length)
 }
 
-function toPointCollection(readings: NetworkReading[]): FeatureCollection<Point, NetworkSpeeds> {
+type ReadingPointProperties = NetworkSpeeds & { recordedAt?: string }
+
+function toPointCollection(
+  readings: NetworkReading[],
+): FeatureCollection<Point, ReadingPointProperties> {
   return {
     type: 'FeatureCollection',
     features: readings.map((reading) => ({
@@ -120,6 +124,7 @@ function toPointCollection(readings: NetworkReading[]): FeatureCollection<Point,
         downloadMbps: reading.downloadMbps,
         uploadMbps: reading.uploadMbps,
         latencyMs: reading.latencyMs,
+        recordedAt: reading.recordedAt,
       },
     })),
   }
@@ -157,6 +162,11 @@ function readingFromFeature(feature: MapGeoJSONFeature | undefined): ReadingDot 
     networkName: networkNameFromSourceId(feature.source),
     speeds: speedsFromProperties(feature.properties),
     readingCount: feature.properties.point_count ?? 1,
+    recordedAt:
+      feature.properties.point_count === undefined &&
+      typeof feature.properties.recordedAt === 'string'
+        ? feature.properties.recordedAt
+        : undefined,
   }
 }
 
@@ -455,6 +465,7 @@ export function WifiMap() {
             networkName={hoverInfo.networkName}
             speeds={hoverInfo.speeds}
             readingCount={hoverInfo.readingCount}
+            recordedAt={hoverInfo.recordedAt}
           />
         </Popup>
       )}

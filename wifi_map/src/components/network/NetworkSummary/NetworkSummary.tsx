@@ -24,7 +24,7 @@ export function NetworkSummary({ speeds }: NetworkSummaryProps) {
               <span className="network-summary-verdict">{rating.verdict}</span>
             </div>
             <span className="network-summary-icon" aria-hidden="true">
-              🐢
+              {rating.icon}
             </span>
             <span
               className="network-summary-track"
@@ -42,7 +42,7 @@ export function NetworkSummary({ speeds }: NetworkSummaryProps) {
               />
             </span>
             <span className="network-summary-icon" aria-hidden="true">
-              🐇
+              {rating.greatIcon}
             </span>
           </li>
         ))}

@@ -56,7 +56,12 @@ function createRandom(seed: number): Random {
   }
 }
 
-function randomReadingInZone(zone: DemoZone, center: Coordinates, random: Random): NetworkReading {
+function randomReadingInZone(
+  zone: DemoZone,
+  center: Coordinates,
+  random: Random,
+  recordedAt: string,
+): NetworkReading {
   const angle = random() * 2 * Math.PI
   // sqrt spreads points evenly over the disc instead of bunching them at the center.
   const distance = Math.sqrt(random()) * ZONE_RADIUS_METERS
@@ -76,12 +81,16 @@ function randomReadingInZone(zone: DemoZone, center: Coordinates, random: Random
     // Without the longitude correction the zones would come out as ellipses.
     longitude: center.longitude + east / metersPerDegreeLongitude(center.latitude),
     latitude: center.latitude + north / METERS_PER_DEGREE_LATITUDE,
+    recordedAt,
   }
 }
 
 export function createDemoReadings(center: Coordinates): NetworkReading[] {
   const random = createRandom(RANDOM_SEED)
+  const recordedAt = new Date().toISOString()
   return DEMO_ZONES.flatMap((zone) =>
-    Array.from({ length: zone.count }, () => randomReadingInZone(zone, center, random)),
+    Array.from({ length: zone.count }, () =>
+      randomReadingInZone(zone, center, random, recordedAt),
+    ),
   )
 }

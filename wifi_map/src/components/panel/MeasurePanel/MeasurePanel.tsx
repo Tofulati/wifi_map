@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent } from 'react'
 import { formatCoordinates } from '../../../lib/coordinates'
 import { cleanNetworkName, networkNameError, resolveNetworkName } from '../../../lib/networkName'
-import { takeNetworkReading, type NetworkReading } from '../../../lib/networkReading'
+import { formatRecordedAt, takeNetworkReading, type NetworkReading } from '../../../lib/networkReading'
 import { loadLastNetworkName, saveLastNetworkName } from '../../../lib/readingStore'
 import { SpeedFigures } from '../../network/SpeedFigures/SpeedFigures'
 import './MeasurePanel.css'
@@ -82,6 +82,11 @@ export function MeasurePanel({ knownNetworkNames, onReading }: MeasurePanelProps
         <div>
           <SpeedFigures speeds={state.reading} /> on {state.reading.networkName}
           <div className="measure-panel-detail">{formatCoordinates(state.reading)}</div>
+          {state.reading.recordedAt && (
+            <div className="measure-panel-detail">
+              Measured {formatRecordedAt(state.reading.recordedAt)}
+            </div>
+          )}
         </div>
       )}
       {state.status === 'error' && <div className="measure-panel-error">{state.message}</div>}

@@ -16,6 +16,15 @@ export type NetworkReading = NetworkSpeeds &
     syncStatus?: 'pending' | 'synced' | 'failed'
   }
 
+export function formatRecordedAt(recordedAt: string): string {
+  const date = new Date(recordedAt)
+  if (Number.isNaN(date.getTime())) return 'Unknown time'
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(date)
+}
+
 // The library's default sequence goes up to 250 MB downloads, which takes close to a minute.
 // This ramps up to 25 MB down and 10 MB up, and each direction stops early once a request size
 // takes over a second, which is enough to saturate typical Wi-Fi without burning time or data.
@@ -100,5 +109,6 @@ export async function takeNetworkReading(networkName: string): Promise<NetworkRe
     ...speeds,
     longitude: position.coords.longitude,
     latitude: position.coords.latitude,
+    recordedAt: new Date().toISOString(),
   }
 }
