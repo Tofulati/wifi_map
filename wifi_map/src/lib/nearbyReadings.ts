@@ -11,7 +11,7 @@ export type NearbyNetwork = {
   networkName: string
   speeds: NetworkSpeeds
   readingCount: number
-  readings?: NetworkReading[]
+  readings: NetworkReading[]
 }
 
 function mean(values: number[]): number {

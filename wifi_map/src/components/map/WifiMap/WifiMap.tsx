@@ -85,7 +85,10 @@ const CLUSTER_PROPERTIES = {
 }
 
 // A dot on the map: one reading, or a cluster of one network's readings averaged together.
-type ReadingDot = NearbyNetwork & { coordinates: Coordinates; recordedAt?: string }
+type ReadingDot = Omit<NearbyNetwork, 'readings'> & {
+  coordinates: Coordinates
+  recordedAt?: string
+}
 
 // The side panel shows one thing at a time: where you are, the network of a reading you
 // clicked, or a place you searched for.

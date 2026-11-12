@@ -1,6 +1,6 @@
 import { formatCoordinates, type Coordinates } from '../../../lib/coordinates'
 import type { NearbyNetwork } from '../../../lib/nearbyReadings'
-import { NetworkSpeedCard } from '../../network/NetworkSpeedCard/NetworkSpeedCard'
+import { NetworkDetails } from '../SelectedNetwork/SelectedNetwork'
 import './PlaceDetails.css'
 
 type PlaceDetailsProps = {
@@ -26,7 +26,11 @@ export function PlaceDetails({
         <ul className="place-details-networks">
           {nearbyNetworks.map((network) => (
             <li key={network.networkName}>
-              <NetworkSpeedCard {...network} />
+              <NetworkDetails
+                networkName={network.networkName}
+                location={placeName ?? formatCoordinates(coordinates)}
+                readings={network.readings}
+              />
             </li>
           ))}
         </ul>

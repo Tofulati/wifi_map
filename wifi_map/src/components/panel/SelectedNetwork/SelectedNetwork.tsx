@@ -14,6 +14,13 @@ type SelectedNetworkProps = {
   readings: NetworkReading[]
 }
 
+type NetworkDetailsProps = {
+  networkName: string
+  location: string
+  readings: NetworkReading[]
+  showMapHint?: boolean
+}
+
 // Readings have no id of their own; two with the same spot and speed would be indistinguishable
 // in the list anyway.
 function readingKey(reading: NetworkReading) {
@@ -28,6 +35,24 @@ function speedTier(downloadMbps: number): 'slow' | 'okay' | 'fast' {
 
 export function SelectedNetwork({ networkName, clickedAt, readings }: SelectedNetworkProps) {
   const placeName = usePlaceName(clickedAt)
+  return (
+    <section className="side-panel-section">
+      <NetworkDetails
+        networkName={networkName}
+        location={placeName ?? formatCoordinates(clickedAt)}
+        readings={readings}
+        showMapHint
+      />
+    </section>
+  )
+}
+
+export function NetworkDetails({
+  networkName,
+  location,
+  readings,
+  showMapHint = false,
+}: NetworkDetailsProps) {
   const { speeds, readingCount } = summarizeNetwork(networkName, readings)
   const readingsFastestFirst = [...readings].sort((a, b) => b.downloadMbps - a.downloadMbps)
   const averageLabel =
@@ -35,10 +60,10 @@ export function SelectedNetwork({ networkName, clickedAt, readings }: SelectedNe
   const listLabel = readingCount > 1 ? `Show all ${readingCount} readings` : 'Show the reading'
 
   return (
-    <section className="side-panel-section">
+    <>
       <header>
         <h2 className="side-panel-heading">{networkName}</h2>
-        <div className="selected-network-location">{placeName ?? formatCoordinates(clickedAt)}</div>
+        <div className="selected-network-location">{location}</div>
       </header>
 
       <div className="selected-network-average">
@@ -81,10 +106,12 @@ export function SelectedNetwork({ networkName, clickedAt, readings }: SelectedNe
         </ul>
       </details>
 
-      <p className="selected-network-detail">
-        The map shows only {networkName}. Click anywhere else on the map to go back to your
-        location.
-      </p>
-    </section>
+      {showMapHint && (
+        <p className="selected-network-detail">
+          The map shows only {networkName}. Click anywhere else on the map to go back to your
+          location.
+        </p>
+      )}
+    </>
   )
 }

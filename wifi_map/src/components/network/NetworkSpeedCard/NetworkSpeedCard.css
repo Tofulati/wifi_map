@@ -13,20 +13,3 @@
   color: var(--color-text-muted);
   font-size: var(--font-size-xs);
 }
-
-.network-speed-card-readings {
-  margin-top: 4px;
-  font-size: var(--font-size-sm);
-}
-
-.network-speed-card-readings ul {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 6px 0 0;
-  padding: 0 0 0 16px;
-}
-
-.network-speed-card-readings li {
-  list-style: none;
-}
