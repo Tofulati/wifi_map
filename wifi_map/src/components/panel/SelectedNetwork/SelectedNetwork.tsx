@@ -80,20 +80,6 @@ export function NetworkDetails({
 
       <details className="selected-network-readings">
         <summary>{listLabel}</summary>
-        <div className="selected-network-speed-legend" aria-label="Download speed legend">
-          <span>
-            <i className="selected-network-speed-dot selected-network-speed-slow" aria-hidden="true" />
-            Slow (&lt;5 Mbps)
-          </span>
-          <span>
-            <i className="selected-network-speed-dot selected-network-speed-okay" aria-hidden="true" />
-            Okay (5–25 Mbps)
-          </span>
-          <span>
-            <i className="selected-network-speed-dot selected-network-speed-fast" aria-hidden="true" />
-            Fast (25+ Mbps)
-          </span>
-        </div>
         <ul className="selected-network-reading-list">
           {readingsFastestFirst.map((reading) => (
             <li
