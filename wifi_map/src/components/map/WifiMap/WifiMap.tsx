@@ -88,7 +88,13 @@ const INITIAL_VIEW_STATE = { longitude: -122.4152, latitude: 37.7759, zoom: USER
 const POPUP_OFFSET_PX = 10
 const POPUP_MAX_WIDTH = '280px'
 const MAP_CONTROLS_POSITION = 'bottom-right'
-const DEMO_NETWORK_PASSWORD = 'cafe-demo-2026'
+const DEMO_NETWORK_PASSWORDS: Record<string, string> = {
+  'Sunrise Cafe': 'sunrise-cafe-2026',
+  'Oak St Library': 'oak-library-2026',
+  'Corner Market Guest': 'corner-market-2026',
+  'Velvet Lounge': 'velvet-lounge-2026',
+  'City Free WiFi': 'city-free-wifi-2026',
+}
 
 // Older readings lack upload and latency, so those get their own counts instead of point_count;
 // `get` returns null for a missing property.
@@ -431,6 +437,11 @@ export function WifiMap() {
     setUserLocation({ status: 'unavailable', message: `Location unavailable (${event.message})` })
   }
 
+  const selectedDemoPassword =
+    activeSelection.kind === 'network'
+      ? DEMO_NETWORK_PASSWORDS[activeSelection.networkName]
+      : undefined
+
   let selectionView: ReactNode = null
   if (activeSelection.kind === 'network') {
     selectionView = (
@@ -438,12 +449,16 @@ export function WifiMap() {
         networkName={activeSelection.networkName}
         clickedAt={activeSelection.clickedAt}
         readings={readingsByNetwork.get(activeSelection.networkName) ?? []}
-        passwordAccess={{
-          password: DEMO_NETWORK_PASSWORD,
-          unlocked: unlockedDemoNetworks.includes(activeSelection.networkName),
-          signalBalance: contributionProgress.balance,
-          onUnlock: () => handleDemoPasswordUnlock(activeSelection.networkName),
-        }}
+        passwordAccess={
+          selectedDemoPassword
+            ? {
+                password: selectedDemoPassword,
+                unlocked: unlockedDemoNetworks.includes(activeSelection.networkName),
+                signalBalance: contributionProgress.balance,
+                onUnlock: () => handleDemoPasswordUnlock(activeSelection.networkName),
+              }
+            : undefined
+        }
       />
     )
   } else if (activeSelection.kind === 'place') {
