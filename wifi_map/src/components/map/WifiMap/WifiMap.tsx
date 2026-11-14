@@ -572,22 +572,24 @@ export function WifiMap() {
             onReading={handleReading}
           />
         </div>
-        <DebugPanel
-          demoEnabled={demoReadings !== null}
-          onDemoToggle={() => {
-            const center = mapRef.current?.getCenter()
-            setDemoReadings((current) =>
-              current === null && center
-                ? createDemoReadings({ longitude: center.lng, latitude: center.lat })
-                : null,
-            )
-          }}
-          onTestContribution={() => applyContributionReward()}
-          onResetDemoPasswordUnlock={() => {
-            clearUnlockedNetworks()
-            setUnlockedDemoNetworks([])
-          }}
-        />
+        {import.meta.env.DEV && (
+          <DebugPanel
+            demoEnabled={demoReadings !== null}
+            onDemoToggle={() => {
+              const center = mapRef.current?.getCenter()
+              setDemoReadings((current) =>
+                current === null && center
+                  ? createDemoReadings({ longitude: center.lng, latitude: center.lat })
+                  : null,
+              )
+            }}
+            onTestContribution={() => applyContributionReward()}
+            onResetDemoPasswordUnlock={() => {
+              clearUnlockedNetworks()
+              setUnlockedDemoNetworks([])
+            }}
+          />
+        )}
       </SidePanel>
     </MapView>
   )

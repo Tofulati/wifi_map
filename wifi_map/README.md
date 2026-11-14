@@ -79,6 +79,8 @@ src/
 │   ├── networkReading.ts    Reading type; runs the speed test and GPS lookup
 │   ├── networkName.ts       Cleans and matches network names ("cafenet" → "CafeNet")
 │   ├── readingStore.ts      Load/save readings in localStorage and preserve sync metadata
+│   ├── contributionRewards.ts  Track Signal rewards and password-unlock spending
+│   ├── passwordAccess.ts    Persist dev-only demo password unlocks in a cookie
 │   ├── supabaseClient.ts    Create the public Supabase client from Vite environment variables
 │   ├── measurementRepository.ts  Typed Supabase persistence and query operations
 │   ├── nearbyReadings.ts    Averages readings per network near a point

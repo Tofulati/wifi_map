@@ -26,6 +26,9 @@ flowchart TD
         networkName
         activitySupport
         photonGeocoder
+        measurementRepository
+        contributionRewards
+        passwordAccess
     end
     subgraph Outside["Browser APIs and services"]
         localStorage
@@ -37,7 +40,11 @@ flowchart TD
     MeasurePanel --> networkReading --> Cloudflare
     networkReading --> Geolocation
     WifiMap --> readingStore --> localStorage
-    WifiMap --> measurementRepository --> Supabase["Supabase PostgreSQL"]
+    WifiMap --> measurementRepository --> Supabase["Supabase PostgreSQL and RPCs"]
+    MeasurePanel --> measurementRepository
+    MeasurePanel --> contributionRewards
+    WifiMap --> passwordAccess
+    passwordAccess --> Cookies["Browser cookie"]
     WifiMap --> speedContours
     WifiMap --> nearbyReadings
     SearchControl --> photonGeocoder --> Photon
@@ -57,6 +64,8 @@ All shared state lives in `WifiMap`, the top-level component. Children receive d
 | `selection` | `PanelSelection` | What the side panel shows: `yourLocation`, a clicked `network`, or a searched `place`. |
 | `userLocation` | `UserLocation` | `locating`, `found` (with coordinates), or `unavailable` (with a message). |
 | `hoverInfo` | `ReadingDot \| null` | The dot under the mouse, for the popup. |
+| `contributionProgress` | `ContributionProgress` | Local Signal balance and contribution streak used for rewards and password actions. |
+| `unlockedDemoNetworks` | `string[]` | Dev-only password unlocks, persisted in a 30-day browser cookie. |
 
 `selection` and `userLocation` are **discriminated unions**: each variant has a `kind` or `status` tag and carries only the fields that make sense for it. TypeScript then won't let you read `coordinates` while the status is `locating`. Separate booleans like `isLocating` and `hasError` could contradict each other; a union can't.
 
@@ -97,6 +106,21 @@ Nothing derived is copied into `useState`. Mirroring derived data into state is 
 4. The `persistReadings` effect writes `readings` to `localStorage`.
 5. A separate synchronization effect upserts pending readings through `measurementRepository`. The UUID makes retries idempotent; failures remain local and are retried after the browser reports that it is online.
 6. The derived data recomputes, and the map redraws the dot and the zones.
+
+Password sharing is a separate opt-in path:
+
+1. `MeasurePanel` checks whether a password exists for the resolved network name and the current
+   coordinates through the `network_password_exists` Supabase RPC.
+2. If no password exists, the user spends Signal points to reveal the password input.
+3. After the measurement, `WifiMap` stores the reading locally and calls `add_network_password`
+   with the password. Supabase stores only a bcrypt hash at the coordinate rounded to four decimal
+   places; the password is never returned by an RPC.
+4. A successful new password earns the additional password-contribution reward. A duplicate or
+   failed password submission does not earn that bonus, but the measurement reward still applies.
+
+The dev branch also supplies seeded demo passwords. Those are not sent to Supabase: selecting a
+demo network can spend Signal points to reveal its local fixture password, and the unlock name is
+stored in a browser cookie for 30 days.
 
 On startup, local readings render immediately. `measurementRepository.listMeasurements()` then loads
 historical Supabase readings and merges them by UUID. Missing Supabase configuration is reported in
@@ -142,7 +166,11 @@ Each activity (streaming, gaming, calls, browsing, downloads) has a "works" thre
 - **Cloudflare speed test**: downloads and uploads test payloads from `speed.cloudflare.com`. Result logging is turned off (`logAimApiUrl: null`).
 - **Photon** (Komoot's public server): receives search queries, and your coordinates for reverse lookups (place names under "Your location" and "Selected network").
 - **CARTO**: serves basemap tiles, so it learns roughly which area you're viewing.
-- Readings never leave the browser. Clearing site data deletes them.
+- When Supabase is configured, readings are synchronized to the public measurement tables; the
+browser retains the local copy for offline use. Password values never leave the browser in
+readable form: only their bcrypt hashes are stored by the password RPC. Clearing site data removes
+local readings, contribution progress, and demo unlocks, but does not remove remote measurements or
+password hashes.
 
 Photon search results are escaped before the geocoder dropdown inserts them as HTML (`EscapingGeocoder` in `SearchControl.tsx`). OpenStreetMap place names are user-edited, so they are untrusted input.
 
