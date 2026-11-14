@@ -1,0 +1,44 @@
+.debug-panel {
+  gap: 10px;
+  margin-top: auto;
+}
+
+.debug-panel-toggle,
+.debug-panel-copy,
+.debug-panel-password {
+  font-size: var(--font-size-xs);
+}
+
+.debug-panel-copy {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.debug-panel-button {
+  align-self: flex-start;
+  min-height: 30px;
+  padding: 4px 10px;
+  font-size: var(--font-size-xs);
+}
+
+.debug-panel-password {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-divider);
+}
+
+.debug-panel-password span {
+  color: var(--color-text-muted);
+}
+
+.debug-panel-password code {
+  width: fit-content;
+  padding: 4px 6px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+}

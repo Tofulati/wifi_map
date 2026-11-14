@@ -18,6 +18,7 @@ import type {
 } from 'react-map-gl/maplibre'
 import type { FeatureCollection, GeoJsonProperties, Point } from 'geojson'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { createDemoReadings } from '../../../data/demoReadings'
 import {
   loadContributionProgress,
   recordContribution,
@@ -51,12 +52,18 @@ import { supabaseConfigurationMessage } from '../../../lib/supabaseClient'
 import { computeSpeedSurfaces, EMPTY_CONTOURS } from '../../../lib/speedContours'
 import { NetworkSpeedCard } from '../../network/NetworkSpeedCard/NetworkSpeedCard'
 import { ContributionStatus } from '../../panel/ContributionStatus/ContributionStatus'
+import { DebugPanel } from '../../panel/DebugPanel/DebugPanel'
 import { PlaceDetails } from '../../panel/PlaceDetails/PlaceDetails'
 import { SearchControl, type SearchResult } from '../../panel/SearchControl/SearchControl'
 import { SelectedNetwork } from '../../panel/SelectedNetwork/SelectedNetwork'
 import { SidePanel } from '../../panel/SidePanel/SidePanel'
 import { YourLocation, type UserLocation } from '../../panel/YourLocation/YourLocation'
 import './WifiMap.css'
+import {
+  clearUnlockedNetworks,
+  loadUnlockedNetworks,
+  rememberUnlockedNetwork,
+} from '../../../lib/passwordAccess'
 import {
   MAP_CONTAINER_STYLE,
   dimmedSpeedPointsPaint,
@@ -187,6 +194,8 @@ export function WifiMap() {
   const [contributionProgress, setContributionProgress] =
     useState<ContributionProgress>(loadContributionProgress)
   const [lastEarned, setLastEarned] = useState<number | null>(null)
+  const [demoReadings, setDemoReadings] = useState<NetworkReading[] | null>(null)
+  const [unlockedDemoNetworks, setUnlockedDemoNetworks] = useState(loadUnlockedNetworks)
   const [selection, setSelection] = useState<PanelSelection>(YOUR_LOCATION)
   const [userLocation, setUserLocation] = useState<UserLocation>({ status: 'locating' })
   const [syncError, setSyncError] = useState<string | null>(supabaseConfigurationMessage)
@@ -258,9 +267,9 @@ export function WifiMap() {
 
   const allReadings = useMemo(
     function combineReadings() {
-      return readings
+      return [...(demoReadings ?? []), ...readings]
     },
-    [readings],
+    [readings, demoReadings],
   )
 
   const readingsByNetwork = useMemo(
@@ -361,6 +370,19 @@ export function WifiMap() {
     const reward = recordContribution({ passwordAdded })
     setContributionProgress(reward.progress)
     setLastEarned(reward.earned)
+  }
+
+  function handleDemoPasswordUnlock(networkName: string) {
+    const progress = spendSignalPoints(PASSWORD_UNLOCK_COST)
+    if (!progress) return false
+    setContributionProgress(progress)
+    setUnlockedDemoNetworks(rememberUnlockedNetwork(networkName))
+    return true
+  }
+
+  function resetDemoPasswordUnlock() {
+    clearUnlockedNetworks()
+    setUnlockedDemoNetworks([])
   }
 
   function handleSearchResult(result: SearchResult) {
@@ -531,7 +553,25 @@ export function WifiMap() {
             onReading={handleReading}
           />
         </div>
-
+        <DebugPanel
+          demoEnabled={demoReadings !== null}
+          onDemoToggle={() => {
+            const center = mapRef.current?.getCenter()
+            setDemoReadings((current) =>
+              current === null && center
+                ? createDemoReadings({ longitude: center.lng, latitude: center.lat })
+                : null,
+            )
+          }}
+          onTestContribution={() => applyContributionReward()}
+          selectedNetworkName={
+            activeSelection.kind === 'network' ? activeSelection.networkName : undefined
+          }
+          unlockedDemoNetworks={unlockedDemoNetworks}
+          signalBalance={contributionProgress.balance}
+          onUnlockDemoPassword={handleDemoPasswordUnlock}
+          onResetDemoPasswordUnlock={resetDemoPasswordUnlock}
+        />
       </SidePanel>
     </MapView>
   )
