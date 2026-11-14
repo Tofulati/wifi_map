@@ -48,6 +48,11 @@ import {
   listMeasurements,
   synchronizeReadings,
 } from '../../../lib/measurementRepository'
+import {
+  clearUnlockedNetworks,
+  loadUnlockedNetworks,
+  rememberUnlockedNetwork,
+} from '../../../lib/passwordAccess'
 import { supabaseConfigurationMessage } from '../../../lib/supabaseClient'
 import { computeSpeedSurfaces, EMPTY_CONTOURS } from '../../../lib/speedContours'
 import { NetworkSpeedCard } from '../../network/NetworkSpeedCard/NetworkSpeedCard'
@@ -59,11 +64,6 @@ import { SelectedNetwork } from '../../panel/SelectedNetwork/SelectedNetwork'
 import { SidePanel } from '../../panel/SidePanel/SidePanel'
 import { YourLocation, type UserLocation } from '../../panel/YourLocation/YourLocation'
 import './WifiMap.css'
-import {
-  clearUnlockedNetworks,
-  loadUnlockedNetworks,
-  rememberUnlockedNetwork,
-} from '../../../lib/passwordAccess'
 import {
   MAP_CONTAINER_STYLE,
   dimmedSpeedPointsPaint,
@@ -88,6 +88,7 @@ const INITIAL_VIEW_STATE = { longitude: -122.4152, latitude: 37.7759, zoom: USER
 const POPUP_OFFSET_PX = 10
 const POPUP_MAX_WIDTH = '280px'
 const MAP_CONTROLS_POSITION = 'bottom-right'
+const DEMO_NETWORK_PASSWORD = 'cafe-demo-2026'
 
 // Older readings lack upload and latency, so those get their own counts instead of point_count;
 // `get` returns null for a missing property.
@@ -194,7 +195,9 @@ export function WifiMap() {
   const [contributionProgress, setContributionProgress] =
     useState<ContributionProgress>(loadContributionProgress)
   const [lastEarned, setLastEarned] = useState<number | null>(null)
-  const [demoReadings, setDemoReadings] = useState<NetworkReading[] | null>(null)
+  const [demoReadings, setDemoReadings] = useState<NetworkReading[] | null>(() =>
+    createDemoReadings({ longitude: INITIAL_VIEW_STATE.longitude, latitude: INITIAL_VIEW_STATE.latitude }),
+  )
   const [unlockedDemoNetworks, setUnlockedDemoNetworks] = useState(loadUnlockedNetworks)
   const [selection, setSelection] = useState<PanelSelection>(YOUR_LOCATION)
   const [userLocation, setUserLocation] = useState<UserLocation>({ status: 'locating' })
@@ -380,11 +383,6 @@ export function WifiMap() {
     return true
   }
 
-  function resetDemoPasswordUnlock() {
-    clearUnlockedNetworks()
-    setUnlockedDemoNetworks([])
-  }
-
   function handleSearchResult(result: SearchResult) {
     setSelection({ kind: 'place', place: result })
   }
@@ -440,6 +438,12 @@ export function WifiMap() {
         networkName={activeSelection.networkName}
         clickedAt={activeSelection.clickedAt}
         readings={readingsByNetwork.get(activeSelection.networkName) ?? []}
+        passwordAccess={{
+          password: DEMO_NETWORK_PASSWORD,
+          unlocked: unlockedDemoNetworks.includes(activeSelection.networkName),
+          signalBalance: contributionProgress.balance,
+          onUnlock: () => handleDemoPasswordUnlock(activeSelection.networkName),
+        }}
       />
     )
   } else if (activeSelection.kind === 'place') {
@@ -564,13 +568,10 @@ export function WifiMap() {
             )
           }}
           onTestContribution={() => applyContributionReward()}
-          selectedNetworkName={
-            activeSelection.kind === 'network' ? activeSelection.networkName : undefined
-          }
-          unlockedDemoNetworks={unlockedDemoNetworks}
-          signalBalance={contributionProgress.balance}
-          onUnlockDemoPassword={handleDemoPasswordUnlock}
-          onResetDemoPasswordUnlock={resetDemoPasswordUnlock}
+          onResetDemoPasswordUnlock={() => {
+            clearUnlockedNetworks()
+            setUnlockedDemoNetworks([])
+          }}
         />
       </SidePanel>
     </MapView>
