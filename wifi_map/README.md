@@ -21,8 +21,9 @@ Supabase CLI.
 
 Measuring needs location permission. Browsers only grant it on `localhost` or over HTTPS, so to test on a phone, expose the dev server through an HTTPS tunnel such as `cloudflared` or `ngrok`. Browsers cannot expose the connected Wi-Fi SSID, so the network label is user-provided and must match the SSID exactly to keep readings grouped correctly.
 
-Development-only demo readings are available on the `dev` branch through its **Debug tools**
-panel. Demo readings are never saved.
+Seeded demo readings are shown around the initial map view and are never saved. On the `dev`
+branch, the **Debug tools** panel adds controls for toggling the demo data, testing rewards, and
+resetting password unlocks.
 
 ## Scripts
 

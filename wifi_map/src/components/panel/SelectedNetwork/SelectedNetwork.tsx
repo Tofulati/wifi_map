@@ -1,5 +1,6 @@
 import { usePlaceName } from '../../../hooks/usePlaceName'
 import { formatCoordinates, type Coordinates } from '../../../lib/coordinates'
+import { PASSWORD_UNLOCK_COST } from '../../../lib/contributionRewards'
 import { summarizeNetwork } from '../../../lib/nearbyReadings'
 import { formatRecordedAt, type NetworkReading } from '../../../lib/networkReading'
 import { NetworkSummary } from '../../network/NetworkSummary/NetworkSummary'
@@ -12,6 +13,14 @@ type SelectedNetworkProps = {
   clickedAt: Coordinates
   // Every reading on this network, wherever on the map it was taken.
   readings: NetworkReading[]
+  passwordAccess?: NetworkPasswordAccess
+}
+
+type NetworkPasswordAccess = {
+  password: string
+  unlocked: boolean
+  signalBalance: number
+  onUnlock: () => boolean
 }
 
 type NetworkDetailsProps = {
@@ -19,6 +28,7 @@ type NetworkDetailsProps = {
   location: string
   readings: NetworkReading[]
   showMapHint?: boolean
+  passwordAccess?: NetworkPasswordAccess
 }
 
 // Readings have no id of their own; two with the same spot and speed would be indistinguishable
@@ -37,6 +47,7 @@ export function SelectedNetwork({
   networkName,
   clickedAt,
   readings,
+  passwordAccess,
 }: SelectedNetworkProps) {
   const placeName = usePlaceName(clickedAt)
   return (
@@ -46,6 +57,7 @@ export function SelectedNetwork({
         location={placeName ?? formatCoordinates(clickedAt)}
         readings={readings}
         showMapHint
+        passwordAccess={passwordAccess}
       />
     </section>
   )
@@ -56,6 +68,7 @@ export function NetworkDetails({
   location,
   readings,
   showMapHint = false,
+  passwordAccess,
 }: NetworkDetailsProps) {
   const { speeds, readingCount } = summarizeNetwork(networkName, readings)
   const readingsFastestFirst = [...readings].sort((a, b) => b.downloadMbps - a.downloadMbps)
@@ -77,6 +90,33 @@ export function NetworkDetails({
         <div className="selected-network-detail">{averageLabel}</div>
         <NetworkSummary speeds={speeds} />
       </div>
+
+      {passwordAccess && (
+        <section className="selected-network-password" aria-label="Wi-Fi password">
+          <div className="selected-network-password-heading">Wi-Fi password</div>
+          {passwordAccess.unlocked ? (
+            <>
+              <code>{passwordAccess.password}</code>
+              <div className="selected-network-detail">Unlocked with Signal points for this session.</div>
+            </>
+          ) : (
+            <>
+              <div className="selected-network-detail">
+                A password is available for this network.
+              </div>
+              <button
+                type="button"
+                onClick={passwordAccess.onUnlock}
+                disabled={passwordAccess.signalBalance < PASSWORD_UNLOCK_COST}
+              >
+                {passwordAccess.signalBalance < PASSWORD_UNLOCK_COST
+                  ? `Need ${PASSWORD_UNLOCK_COST} Signal`
+                  : `Unlock for ${PASSWORD_UNLOCK_COST} Signal`}
+              </button>
+            </>
+          )}
+        </section>
+      )}
 
       <details className="selected-network-readings">
         <summary>{listLabel}</summary>
