@@ -18,7 +18,6 @@ import type {
 } from 'react-map-gl/maplibre'
 import type { FeatureCollection, GeoJsonProperties, Point } from 'geojson'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { createDemoReadings } from '../../../data/demoReadings'
 import {
   loadContributionProgress,
   recordContribution,
@@ -48,10 +47,6 @@ import {
   listMeasurements,
   synchronizeReadings,
 } from '../../../lib/measurementRepository'
-import {
-  loadUnlockedNetworks,
-  rememberUnlockedNetwork,
-} from '../../../lib/passwordAccess'
 import { supabaseConfigurationMessage } from '../../../lib/supabaseClient'
 import { computeSpeedSurfaces, EMPTY_CONTOURS } from '../../../lib/speedContours'
 import { NetworkSpeedCard } from '../../network/NetworkSpeedCard/NetworkSpeedCard'
@@ -86,7 +81,6 @@ const INITIAL_VIEW_STATE = { longitude: -122.4152, latitude: 37.7759, zoom: USER
 const POPUP_OFFSET_PX = 10
 const POPUP_MAX_WIDTH = '280px'
 const MAP_CONTROLS_POSITION = 'bottom-right'
-const DEMO_NETWORK_PASSWORD = 'cafe-demo-2026'
 
 // Older readings lack upload and latency, so those get their own counts instead of point_count;
 // `get` returns null for a missing property.
@@ -193,10 +187,6 @@ export function WifiMap() {
   const [contributionProgress, setContributionProgress] =
     useState<ContributionProgress>(loadContributionProgress)
   const [lastEarned, setLastEarned] = useState<number | null>(null)
-  const [demoReadings] = useState(() =>
-    createDemoReadings({ longitude: INITIAL_VIEW_STATE.longitude, latitude: INITIAL_VIEW_STATE.latitude }),
-  )
-  const [unlockedDemoNetworks, setUnlockedDemoNetworks] = useState(loadUnlockedNetworks)
   const [selection, setSelection] = useState<PanelSelection>(YOUR_LOCATION)
   const [userLocation, setUserLocation] = useState<UserLocation>({ status: 'locating' })
   const [syncError, setSyncError] = useState<string | null>(supabaseConfigurationMessage)
@@ -268,9 +258,9 @@ export function WifiMap() {
 
   const allReadings = useMemo(
     function combineReadings() {
-      return [...demoReadings, ...readings]
+      return readings
     },
-    [demoReadings, readings],
+    [readings],
   )
 
   const readingsByNetwork = useMemo(
@@ -373,14 +363,6 @@ export function WifiMap() {
     setLastEarned(reward.earned)
   }
 
-  function handleDemoPasswordUnlock(networkName: string) {
-    const progress = spendSignalPoints(PASSWORD_UNLOCK_COST)
-    if (!progress) return false
-    setContributionProgress(progress)
-    setUnlockedDemoNetworks(rememberUnlockedNetwork(networkName))
-    return true
-  }
-
   function handleSearchResult(result: SearchResult) {
     setSelection({ kind: 'place', place: result })
   }
@@ -436,12 +418,6 @@ export function WifiMap() {
         networkName={activeSelection.networkName}
         clickedAt={activeSelection.clickedAt}
         readings={readingsByNetwork.get(activeSelection.networkName) ?? []}
-        passwordAccess={{
-          password: DEMO_NETWORK_PASSWORD,
-          unlocked: unlockedDemoNetworks.includes(activeSelection.networkName),
-          signalBalance: contributionProgress.balance,
-          onUnlock: () => handleDemoPasswordUnlock(activeSelection.networkName),
-        }}
       />
     )
   } else if (activeSelection.kind === 'place') {
