@@ -10,6 +10,12 @@ type NetworkRow = {
   id: string
 }
 
+type NetworkPasswordLocation = {
+  networkName: string
+  latitude: number
+  longitude: number
+}
+
 type MeasurementRow = {
   id: string
   latitude: number
@@ -178,6 +184,39 @@ export async function listNetworks(): Promise<string[]> {
     .order('ssid')
   if (error) throwRepositoryError('Unable to load networks', error)
   return data.map((network) => network.ssid)
+}
+
+export async function networkPasswordExists({
+  networkName,
+  latitude,
+  longitude,
+}: NetworkPasswordLocation): Promise<boolean> {
+  const client = requireClient()
+  const { data, error } = await client.rpc('network_password_exists', {
+    p_network_name: cleanNetworkName(networkName),
+    p_latitude: latitude,
+    p_longitude: longitude,
+  })
+  if (error) throwRepositoryError('Unable to check network password availability', error)
+  return data === true
+}
+
+export async function addNetworkPassword(
+  { networkName, latitude, longitude }: NetworkPasswordLocation,
+  password: string,
+): Promise<boolean> {
+  if (password.length === 0 || password.length > 128) {
+    throw new MeasurementRepositoryError('Network password must be between 1 and 128 characters')
+  }
+  const client = requireClient()
+  const { data, error } = await client.rpc('add_network_password', {
+    p_network_name: cleanNetworkName(networkName),
+    p_latitude: latitude,
+    p_longitude: longitude,
+    p_password: password,
+  })
+  if (error) throwRepositoryError('Unable to save network password', error)
+  return data === true
 }
 
 export async function synchronizeReadings(readings: NetworkReading[]): Promise<{

@@ -16,13 +16,17 @@ type YourLocationProps = {
   userLocation: UserLocation
   nearbyNetworks: NearbyNetwork[]
   knownNetworkNames: string[]
-  onReading: (reading: NetworkReading) => void
+  signalBalance: number
+  onUnlockPassword: () => boolean
+  onReading: (reading: NetworkReading, password?: string) => void | Promise<void>
 }
 
 export function YourLocation({
   userLocation,
   nearbyNetworks,
   knownNetworkNames,
+  signalBalance,
+  onUnlockPassword,
   onReading,
 }: YourLocationProps) {
   const placeName = usePlaceName(userLocation.status === 'found' ? userLocation.coordinates : null)
@@ -58,7 +62,13 @@ export function YourLocation({
       </div>
       <div className="your-location-measure">
         <h3 className="your-location-subheading">Measure your own network</h3>
-        <MeasurePanel knownNetworkNames={knownNetworkNames} onReading={onReading} />
+        <MeasurePanel
+          knownNetworkNames={knownNetworkNames}
+          location={userLocation.status === 'found' ? userLocation.coordinates : null}
+          signalBalance={signalBalance}
+          onUnlockPassword={onUnlockPassword}
+          onReading={onReading}
+        />
       </div>
     </section>
   )

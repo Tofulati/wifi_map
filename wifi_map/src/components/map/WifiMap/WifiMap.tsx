@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { setWorkerUrl, type MapGeoJSONFeature } from 'maplibre-gl'
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import MapView, {
@@ -18,7 +18,13 @@ import type {
 } from 'react-map-gl/maplibre'
 import type { FeatureCollection, GeoJsonProperties, Point } from 'geojson'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { createDemoReadings } from '../../../data/demoReadings'
+import {
+  loadContributionProgress,
+  recordContribution,
+  spendSignalPoints,
+  PASSWORD_UNLOCK_COST,
+  type ContributionProgress,
+} from '../../../lib/contributionRewards'
 import type { Coordinates } from '../../../lib/coordinates'
 import {
   NEARBY_RADIUS_METERS,
@@ -37,12 +43,14 @@ import {
   saveReadings,
 } from '../../../lib/readingStore'
 import {
+  addNetworkPassword,
   listMeasurements,
   synchronizeReadings,
 } from '../../../lib/measurementRepository'
 import { supabaseConfigurationMessage } from '../../../lib/supabaseClient'
 import { computeSpeedSurfaces, EMPTY_CONTOURS } from '../../../lib/speedContours'
 import { NetworkSpeedCard } from '../../network/NetworkSpeedCard/NetworkSpeedCard'
+import { ContributionStatus } from '../../panel/ContributionStatus/ContributionStatus'
 import { PlaceDetails } from '../../panel/PlaceDetails/PlaceDetails'
 import { SearchControl, type SearchResult } from '../../panel/SearchControl/SearchControl'
 import { SelectedNetwork } from '../../panel/SelectedNetwork/SelectedNetwork'
@@ -176,8 +184,9 @@ function readingFromFeature(feature: MapGeoJSONFeature | undefined): ReadingDot 
 export function WifiMap() {
   const [hoverInfo, setHoverInfo] = useState<ReadingDot | null>(null)
   const [readings, setReadings] = useState(loadReadings)
-  // Kept apart from `readings` so fake data is never written to localStorage.
-  const [demoReadings, setDemoReadings] = useState<NetworkReading[] | null>(null)
+  const [contributionProgress, setContributionProgress] =
+    useState<ContributionProgress>(loadContributionProgress)
+  const [lastEarned, setLastEarned] = useState<number | null>(null)
   const [selection, setSelection] = useState<PanelSelection>(YOUR_LOCATION)
   const [userLocation, setUserLocation] = useState<UserLocation>({ status: 'locating' })
   const [syncError, setSyncError] = useState<string | null>(supabaseConfigurationMessage)
@@ -249,9 +258,9 @@ export function WifiMap() {
 
   const allReadings = useMemo(
     function combineReadings() {
-      return [...(demoReadings ?? []), ...readings]
+      return readings
     },
-    [readings, demoReadings],
+    [readings],
   )
 
   const readingsByNetwork = useMemo(
@@ -269,7 +278,7 @@ export function WifiMap() {
     [allReadings, userCoordinates],
   )
 
-  // A selected network that's gone, e.g. after hiding the demo data, falls back to your location.
+  // A selected network that's gone falls back to your location.
   const activeSelection =
     selection.kind === 'network' && !readingsByNetwork.has(selection.networkName)
       ? YOUR_LOCATION
@@ -314,12 +323,44 @@ export function WifiMap() {
       : (speedSurfaces.byNetwork.get(activeFocus) ?? EMPTY_CONTOURS)
 
   // A reading carries a fresh GPS fix, which is newer than the last one the geolocate control got.
-  function handleReading(reading: NetworkReading) {
+  function handleUnlockPassword() {
+    const progress = spendSignalPoints(PASSWORD_UNLOCK_COST)
+    if (!progress) return false
+    setContributionProgress(progress)
+    return true
+  }
+
+  async function handleReading(reading: NetworkReading, password?: string) {
     setReadings((previous) => [...previous, ensureReadingIdentity(reading)])
+    let passwordAdded = false
+    if (password) {
+      try {
+        passwordAdded = await addNetworkPassword(
+          {
+            networkName: reading.networkName,
+            latitude: reading.latitude,
+            longitude: reading.longitude,
+          },
+          password,
+        )
+        if (!passwordAdded) {
+          setSyncError('A password is already saved for this spot; no bonus was awarded.')
+        }
+      } catch (error) {
+        setSyncError(error instanceof Error ? error.message : String(error))
+      }
+    }
+    applyContributionReward(passwordAdded)
     setUserLocation({
       status: 'found',
       coordinates: { longitude: reading.longitude, latitude: reading.latitude },
     })
+  }
+
+  function applyContributionReward(passwordAdded = false) {
+    const reward = recordContribution({ passwordAdded })
+    setContributionProgress(reward.progress)
+    setLastEarned(reward.earned)
   }
 
   function handleSearchResult(result: SearchResult) {
@@ -329,15 +370,6 @@ export function WifiMap() {
   // Clearing the search box only matters while the panel is showing the searched place.
   function handleSearchClear() {
     setSelection((previous) => (previous.kind === 'place' ? YOUR_LOCATION : previous))
-  }
-
-  function handleDemoToggle(event: ChangeEvent<HTMLInputElement>) {
-    const center = mapRef.current?.getCenter()
-    setDemoReadings(
-      event.target.checked && center
-        ? createDemoReadings({ longitude: center.lng, latitude: center.lat })
-        : null,
-    )
   }
 
   function handleMouseMove(event: MapLayerMouseEvent) {
@@ -474,6 +506,10 @@ export function WifiMap() {
       )}
 
       <SidePanel>
+        <ContributionStatus
+          progress={contributionProgress}
+          lastEarned={lastEarned}
+        />
         <SearchControl
           zoom={USER_LOCATION_ZOOM}
           onResult={handleSearchResult}
@@ -490,16 +526,12 @@ export function WifiMap() {
             userLocation={userLocation}
             nearbyNetworks={networksNearUser}
             knownNetworkNames={networkNames}
+            signalBalance={contributionProgress.balance}
+            onUnlockPassword={handleUnlockPassword}
             onReading={handleReading}
           />
         </div>
 
-        {import.meta.env.DEV && (
-          <label className="wifi-map-demo-toggle">
-            <input type="checkbox" checked={demoReadings !== null} onChange={handleDemoToggle} />{' '}
-            Show demo data
-          </label>
-        )}
       </SidePanel>
     </MapView>
   )

@@ -33,7 +33,11 @@ function speedTier(downloadMbps: number): 'slow' | 'okay' | 'fast' {
   return 'fast'
 }
 
-export function SelectedNetwork({ networkName, clickedAt, readings }: SelectedNetworkProps) {
+export function SelectedNetwork({
+  networkName,
+  clickedAt,
+  readings,
+}: SelectedNetworkProps) {
   const placeName = usePlaceName(clickedAt)
   return (
     <section className="side-panel-section">

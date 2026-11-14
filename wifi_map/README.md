@@ -127,6 +127,12 @@ production use. For deployment with accounts, replace them with policies based o
 add an ownership column (or a user-scoped `network_scope`), then add rate limiting and moderation
 at the edge.
 
+Network passwords are opt-in and require Signal points to unlock. The
+`20261113000000_add_network_passwords.sql` migration stores only a bcrypt hash through
+security-definer RPCs. The password table has no browser read policy, and the client receives only
+whether a password exists at that network and location or was newly accepted; a password is never
+returned to the page or loaded from the database.
+
 ## Further reading
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): how state, data, and rendering fit together, and how speed zones are computed
