@@ -6,8 +6,6 @@ import { loadLastNetworkName, saveLastNetworkName } from '../../../lib/readingSt
 import { SpeedFigures } from '../../network/SpeedFigures/SpeedFigures'
 import './MeasurePanel.css'
 
-const KNOWN_NETWORKS_LIST_ID = 'known-networks'
-
 type MeasureState =
   | { status: 'idle' }
   | { status: 'measuring' }
@@ -48,12 +46,11 @@ export function MeasurePanel({ knownNetworkNames, onReading }: MeasurePanelProps
   return (
     <div className="measure-panel">
       <label className="measure-panel-field">
-        Network label
+        Network name (SSID)
         <input
-          list={KNOWN_NETWORKS_LIST_ID}
           value={networkInput}
           onChange={handleNetworkInputChange}
-          placeholder="e.g. CafeNet"
+          placeholder="Enter the name shown in Wi-Fi settings"
           autoComplete="off"
           autoCapitalize="off"
           autoCorrect="off"
@@ -61,14 +58,9 @@ export function MeasurePanel({ knownNetworkNames, onReading }: MeasurePanelProps
         />
       </label>
       <div className="measure-panel-warning">
-        Browsers cannot read the Wi-Fi name. Use the exact SSID; this label is not verified and
-        controls how readings are grouped.
+        Browsers cannot read the current Wi-Fi name. Enter the SSID shown in your device’s Wi-Fi
+        settings; it controls how readings are grouped.
       </div>
-      <datalist id={KNOWN_NETWORKS_LIST_ID}>
-        {knownNetworkNames.map((name) => (
-          <option key={name} value={name} />
-        ))}
-      </datalist>
       {networkInput !== '' && nameError && <div className="measure-panel-error">{nameError}</div>}
       {matchesExistingSpelling && (
         <div className="measure-panel-detail">Matches existing network “{resolvedName}”</div>

@@ -52,8 +52,14 @@ export function YourLocation({
   return (
     <section className="side-panel-section">
       <h2 className="side-panel-heading">Your location</h2>
-      {details}
-      <MeasurePanel knownNetworkNames={knownNetworkNames} onReading={onReading} />
+      <div className="your-location-results">
+        <h3 className="your-location-subheading">Nearby readings</h3>
+        {details}
+      </div>
+      <div className="your-location-measure">
+        <h3 className="your-location-subheading">Measure your own network</h3>
+        <MeasurePanel knownNetworkNames={knownNetworkNames} onReading={onReading} />
+      </div>
     </section>
   )
 }
